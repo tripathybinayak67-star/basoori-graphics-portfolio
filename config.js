@@ -7,7 +7,7 @@
 
 window.PORTFOLIO_CONFIG = {
   profile: {
-    brandName: "BINAYAK.DESIGN",
+    brandName: "BASOORI GRAPHICS",
     designerName: "Binayak Tripathy",
     tagline: "High-CTR YouTube Thumbnail Specialist & Visual Director",
     heroTitle: "Turning Impressions Into <span class='gradient-text'>Unstoppable Clicks</span>",
