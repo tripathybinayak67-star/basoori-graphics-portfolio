@@ -1,813 +1,808 @@
 // ============================================================================
-// BINAYAK.DESIGN — CLEAN, ZERO-BUG APPLICATION ENGINE (app.js v3)
+// BINAYAK.CRAFT — MINECRAFT EDITION APPLICATION ENGINE (app.js v5)
 // ============================================================================
 
 (function () {
-  var STORAGE_KEY = "binayak_portfolio_state_v3";
+  var STORAGE_KEY = "binayak_craft_v5_state";
 
-  function getDefaultConfig() {
+  function getBaseConfig() {
     if (window.PORTFOLIO_CONFIG) {
       return JSON.parse(JSON.stringify(window.PORTFOLIO_CONFIG));
     }
-    return { profile: {}, stats: [], categories: ["All"], portfolio: [], plans: [], reviews: [] };
+    return {
+      profile: {},
+      stats: [],
+      categories: ["All"],
+      portfolio: [],
+      plans: [],
+      reviews: []
+    };
   }
 
   function loadState() {
-    var base = getDefaultConfig();
+    var fallback = getBaseConfig();
     try {
-      var saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        var parsed = JSON.parse(saved);
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
         if (parsed && parsed.profile && Array.isArray(parsed.portfolio)) {
           return parsed;
         }
       }
-    } catch (err) {
-      console.warn("Using default config.js state:", err);
+    } catch (e) {
+      console.warn("Local storage fallback:", e);
     }
-    return base;
+    return fallback;
   }
 
   var state = loadState();
-  var activeCategory = "All";
-  var isYouTubeFeedMode = false;
+  var selectedCategory = "All";
+  var ytFeedView = false;
   var adminUnlocked = false;
-  var currentAdminTab = "portfolio";
+  var activeAdminTab = "portfolio";
 
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (err) {
-      console.warn("Could not save to localStorage:", err);
+    } catch (e) {
+      console.warn("Could not save state:", e);
     }
   }
 
-  function escapeHtml(str) {
-    if (str === null || str === undefined) return "";
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+  function cleanHtml(val) {
+    if (val === null || val === undefined) return "";
+    return String(val)
+      .split("&").join("&amp;")
+      .split("<").join("&lt;")
+      .split(">").join("&gt;")
+      .split('"').join("&quot;")
+      .split("'").join("&#39;");
   }
 
-  function showToast(msg) {
-    var toast = document.getElementById("live-toast");
-    if (!toast) return;
-    toast.textContent = msg;
-    toast.classList.add("show");
-    if (window._toastTimeout) clearTimeout(window._toastTimeout);
-    window._toastTimeout = setTimeout(function () {
-      toast.classList.remove("show");
+  function showToast(text) {
+    var el = document.getElementById("toast-banner");
+    if (!el) return;
+    el.textContent = text;
+    el.classList.add("visible");
+    if (window._toastTimer) clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(function () {
+      el.classList.remove("visible");
     }, 3200);
   }
 
-  function copyToClipboard(text, message) {
+  function copyText(text, toastMessage) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () {
-        showToast(message);
+        showToast(toastMessage);
       }).catch(function () {
-        fallbackCopy(text, message);
+        fallbackCopyText(text, toastMessage);
       });
     } else {
-      fallbackCopy(text, message);
+      fallbackCopyText(text, toastMessage);
     }
   }
 
-  function fallbackCopy(text, message) {
-    var ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
+  function fallbackCopyText(text, toastMessage) {
+    var area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
     try {
       document.execCommand("copy");
-    } catch (e) {}
-    document.body.removeChild(ta);
-    showToast(message);
+    } catch (err) {}
+    document.body.removeChild(area);
+    showToast(toastMessage);
   }
 
-  function applyThemeColors() {
+  function applyTheme() {
     var root = document.documentElement;
-    if (state.profile && state.profile.accentColor) {
-      root.style.setProperty("--accent-primary", state.profile.accentColor);
-    }
-    if (state.profile && state.profile.secondaryColor) {
-      root.style.setProperty("--accent-secondary", state.profile.secondaryColor);
-    }
+    var p = state.profile || {};
+    if (p.primaryColor) root.style.setProperty("--mc-green", p.primaryColor);
+    if (p.secondaryColor) root.style.setProperty("--mc-gold", p.secondaryColor);
   }
 
-  function renderProfileAndHero() {
+  function renderHeroAndProfile() {
     var p = state.profile || {};
-    var brandEl = document.getElementById("nav-brand-text");
-    if (brandEl) brandEl.textContent = p.brandName || "BINAYAK.DESIGN";
+    var brandEl = document.getElementById("brand-name-text");
+    if (brandEl) brandEl.textContent = p.brandName || "BINAYAK.CRAFT";
 
-    var availEl = document.getElementById("hero-availability");
-    if (availEl) availEl.textContent = p.availabilityText || "Available for Commissions";
+    var statusEl = document.getElementById("hero-status-text");
+    if (statusEl) statusEl.textContent = p.availabilityText || "Server Status: ONLINE";
 
-    var titleEl = document.getElementById("hero-title");
-    if (titleEl) titleEl.innerHTML = p.heroTitle || "Turning Impressions Into <span class='gradient-text'>Unstoppable Clicks</span>";
+    var titleEl = document.getElementById("hero-heading");
+    if (titleEl) titleEl.innerHTML = p.heroTitle || "Crafting <span class='mc-gold-text'>God-Tier Clicks</span>";
 
-    var subEl = document.getElementById("hero-subtitle");
-    if (subEl) subEl.textContent = p.heroSubtitle || "";
+    var leadEl = document.getElementById("hero-lead");
+    if (leadEl) leadEl.textContent = p.heroSubtitle || "";
 
-    var footEl = document.getElementById("footer-brand");
-    if (footEl) footEl.textContent = (p.brandName || "BINAYAK.DESIGN") + " — " + (p.designerName || "Binayak Tripathy");
+    var footBrand = document.getElementById("footer-brand-line");
+    if (footBrand) footBrand.textContent = (p.brandName || "BINAYAK.CRAFT") + " — " + (p.designerName || "Binayak Tripathy");
 
-    var heroDiscordLabel = document.getElementById("hero-discord-label");
-    if (heroDiscordLabel) {
-      heroDiscordLabel.textContent = "🎮 Discord: " + (p.discordUsername || "binayak.design");
+    var dcHeroBtn = document.getElementById("hero-discord-text");
+    if (dcHeroBtn) dcHeroBtn.textContent = "🎮 Discord: " + (p.discordUsername || "binayak.design");
+
+    var igHeroBtn = document.getElementById("hero-insta-link");
+    if (igHeroBtn) {
+      igHeroBtn.href = p.instagramUrl || "https://instagram.com";
+      igHeroBtn.textContent = "📸 Instagram (" + (p.instagramHandle || "@binayak.design") + ")";
     }
 
-    var heroInstaBtn = document.getElementById("hero-insta-btn");
-    if (heroInstaBtn) {
-      heroInstaBtn.href = p.instagramUrl || "https://instagram.com";
-      heroInstaBtn.textContent = "📸 Instagram (" + (p.instagramHandle || "@binayak.design") + ")";
+    var igNavBtn = document.getElementById("nav-insta-link");
+    if (igNavBtn) {
+      igNavBtn.href = p.instagramUrl || "https://instagram.com";
     }
 
-    var navInstaBtn = document.getElementById("nav-insta-btn");
-    if (navInstaBtn) {
-      navInstaBtn.href = p.instagramUrl || "https://instagram.com";
-    }
-
-    var featured = null;
+    var spotlight = null;
     for (var i = 0; i < state.portfolio.length; i++) {
       if (state.portfolio[i].featured) {
-        featured = state.portfolio[i];
+        spotlight = state.portfolio[i];
         break;
       }
     }
-    if (!featured && state.portfolio.length > 0) {
-      featured = state.portfolio[0];
+    if (!spotlight && state.portfolio.length > 0) {
+      spotlight = state.portfolio[0];
     }
 
-    if (featured) {
-      var imgEl = document.getElementById("hero-showcase-img");
-      var ctrEl = document.getElementById("hero-showcase-ctr");
-      var tEl = document.getElementById("hero-showcase-title");
-      var mEl = document.getElementById("hero-showcase-meta");
-      if (imgEl) imgEl.src = featured.image;
-      if (ctrEl) ctrEl.textContent = "🔥 " + featured.ctr + " CTR";
-      if (tEl) tEl.textContent = featured.title;
-      if (mEl) mEl.textContent = featured.creator + " • " + featured.viewsGenerated;
+    if (spotlight) {
+      var sImg = document.getElementById("spotlight-img");
+      var sCtr = document.getElementById("spotlight-ctr");
+      var sTitle = document.getElementById("spotlight-title");
+      var sMeta = document.getElementById("spotlight-meta");
+      var sFrame = document.getElementById("spotlight-frame");
+      if (sImg) sImg.src = spotlight.image;
+      if (sCtr) sCtr.textContent = "🔥 " + spotlight.ctr;
+      if (sTitle) sTitle.textContent = spotlight.title;
+      if (sMeta) sMeta.textContent = spotlight.creator + " • " + spotlight.views;
+      if (sFrame) sFrame.setAttribute("data-inspect-id", spotlight.id);
     }
   }
 
   function renderStats() {
-    var grid = document.getElementById("stats-grid");
-    if (!grid) return;
-    var html = "";
+    var box = document.getElementById("stats-bento");
+    if (!box) return;
+    var out = "";
     for (var i = 0; i < state.stats.length; i++) {
-      var st = state.stats[i];
-      html +=
-        '<div class="stat-card">' +
-          '<div class="stat-icon-wrap">' + escapeHtml(st.icon || "⚡") + '</div>' +
-          '<div class="stat-value">' + escapeHtml(st.value) + '</div>' +
-          '<div class="stat-label">' + escapeHtml(st.label) + '</div>' +
-          '<div class="stat-subtext">' + escapeHtml(st.subtext) + '</div>' +
+      var s = state.stats[i];
+      out +=
+        '<div class="stat-tile">' +
+          '<span class="stat-tag">' + cleanHtml(s.tag || "XP LEVEL 99") + '</span>' +
+          '<div class="stat-number">' + cleanHtml(s.value) + '</div>' +
+          '<div class="stat-title">' + cleanHtml(s.label) + '</div>' +
+          '<div class="stat-desc">' + cleanHtml(s.detail) + '</div>' +
         '</div>';
     }
-    grid.innerHTML = html;
+    box.innerHTML = out;
   }
 
   function renderCategories() {
-    var container = document.getElementById("category-pills");
-    if (!container) return;
-    var cats = state.categories && state.categories.length ? state.categories : ["All"];
-    var html = "";
+    var wrap = document.getElementById("category-list");
+    if (!wrap) return;
+    var cats = Array.isArray(state.categories) && state.categories.length ? state.categories : ["All"];
+    var out = "";
     for (var i = 0; i < cats.length; i++) {
       var c = cats[i];
-      var activeClass = c === activeCategory ? "filter-pill active" : "filter-pill";
-      html += '<button type="button" class="' + activeClass + '" data-cat="' + escapeHtml(c) + '">' + escapeHtml(c) + '</button>';
+      var cls = c === selectedCategory ? "cat-btn active" : "cat-btn";
+      out += '<button type="button" class="' + cls + '" data-filter-cat="' + cleanHtml(c) + '">' + cleanHtml(c) + '</button>';
     }
-    container.innerHTML = html;
+    wrap.innerHTML = out;
   }
 
   function renderPortfolio() {
-    var grid = document.getElementById("portfolio-grid");
+    var grid = document.getElementById("work-grid");
     if (!grid) return;
 
-    grid.className = isYouTubeFeedMode ? "portfolio-grid yt-feed-mode" : "portfolio-grid";
+    grid.className = ytFeedView ? "work-grid yt-sim" : "work-grid";
 
-    var items = [];
+    var list = [];
     for (var i = 0; i < state.portfolio.length; i++) {
-      var it = state.portfolio[i];
-      if (activeCategory === "All" || it.category === activeCategory) {
-        items.push(it);
+      var item = state.portfolio[i];
+      if (selectedCategory === "All" || item.category === selectedCategory) {
+        list.push(item);
       }
     }
 
-    if (items.length === 0) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-sub);">No thumbnails in this category yet. Click "⚙️ Customize / Admin Studio" to add work!</div>';
+    if (list.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:56px;color:var(--text-silver);background:var(--bg-stone-panel);border:4px solid var(--border-pixel);">No thumbnails in this chest yet. Click "⚒️ Crafting Table (Admin)" to add new work!</div>';
       return;
     }
 
-    var html = "";
-    for (var j = 0; j < items.length; j++) {
-      var item = items[j];
-      html +=
-        '<article class="portfolio-card">' +
-          '<div class="thumb-box" data-lightbox-id="' + escapeHtml(item.id) + '">' +
-            '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy" />' +
-            '<div class="thumb-badges-top">' +
-              '<span class="ctr-pill">⚡ ' + escapeHtml(item.ctr) + ' CTR</span>' +
-              '<span class="views-pill">' + escapeHtml(item.viewsGenerated) + '</span>' +
+    var out = "";
+    for (var j = 0; j < list.length; j++) {
+      var w = list[j];
+      out +=
+        '<article class="work-card">' +
+          '<div class="work-thumb" data-inspect-id="' + cleanHtml(w.id) + '">' +
+            '<img src="' + cleanHtml(w.image) + '" alt="' + cleanHtml(w.title) + '" loading="lazy" />' +
+            '<div class="work-overlays">' +
+              '<span class="badge-ctr">⚡ ' + cleanHtml(w.ctr) + '</span>' +
+              '<span class="badge-views">' + cleanHtml(w.views) + '</span>' +
             '</div>' +
-            '<span class="yt-duration-badge">' + escapeHtml(item.duration || "14:20") + '</span>' +
+            '<span class="spotlight-time">' + cleanHtml(w.duration || "14:20") + '</span>' +
           '</div>' +
-          '<div class="card-body">' +
-            '<div class="card-category">' + escapeHtml(item.category) + '</div>' +
-            '<h3 class="card-title">' + escapeHtml(item.title) + '</h3>' +
-            '<p class="card-breakdown">' + escapeHtml(item.breakdown || "") + '</p>' +
-            '<div class="card-footer">' +
-              '<span>👤 ' + escapeHtml(item.creator) + '</span>' +
-              '<span style="color:var(--accent-primary);font-weight:700;cursor:pointer;" data-lightbox-id="' + escapeHtml(item.id) + '">Inspect HD →</span>' +
+          '<div class="work-content">' +
+            '<div class="work-niche">' + cleanHtml(w.category) + '</div>' +
+            '<h3 class="work-title">' + cleanHtml(w.title) + '</h3>' +
+            '<p class="work-notes">' + cleanHtml(w.notes || "") + '</p>' +
+            '<div class="work-meta-foot">' +
+              '<span>👤 ' + cleanHtml(w.creator) + '</span>' +
+              '<span style="color:var(--mc-gold);font-family:var(--font-pixel);font-size:0.72rem;cursor:pointer;" data-inspect-id="' + cleanHtml(w.id) + '">Inspect HD ↗</span>' +
             '</div>' +
           '</div>' +
         '</article>';
     }
-    grid.innerHTML = html;
+    grid.innerHTML = out;
   }
 
   function renderPlans() {
-    var grid = document.getElementById("pricing-grid");
+    var grid = document.getElementById("plans-grid");
     if (!grid) return;
-    var html = "";
+    var out = "";
     for (var i = 0; i < state.plans.length; i++) {
-      var plan = state.plans[i];
-      var popClass = plan.popular ? "plan-card popular" : "plan-card";
-      var btnClass = plan.popular ? "btn btn-primary" : "btn btn-secondary";
+      var p = state.plans[i];
+      var cardCls = p.popular ? "plan-box featured" : "plan-box";
+      var btnCls = p.popular ? "btn btn-primary" : "btn btn-ghost";
 
-      var featuresHtml = "";
-      var feats = Array.isArray(plan.features) ? plan.features : [];
+      var perks = "";
+      var feats = Array.isArray(p.features) ? p.features : [];
       for (var f = 0; f < feats.length; f++) {
-        featuresHtml += '<li><span class="check-icon">✔</span> <span>' + escapeHtml(feats[f]) + '</span></li>';
+        perks += '<li><span class="perk-check">✔</span> <span>' + cleanHtml(feats[f]) + '</span></li>';
       }
 
-      html +=
-        '<div class="' + popClass + '">' +
-          (plan.badge ? '<span class="plan-badge">' + escapeHtml(plan.badge) + '</span>' : '') +
-          '<h3 class="plan-name">' + escapeHtml(plan.name) + '</h3>' +
-          '<p class="plan-tagline">' + escapeHtml(plan.tagline) + '</p>' +
-          '<div class="plan-price-wrap">' +
-            '<span class="plan-currency">₹</span>' +
-            '<span class="plan-price">' + escapeHtml(plan.priceINR) + '</span>' +
+      out +=
+        '<div class="' + cardCls + '">' +
+          (p.badge ? '<span class="plan-ribbon">' + cleanHtml(p.badge) + '</span>' : '') +
+          '<h3 class="plan-title">' + cleanHtml(p.name) + '</h3>' +
+          '<p class="plan-sub">' + cleanHtml(p.subtitle) + '</p>' +
+          '<div class="plan-price-row">' +
+            '<span class="plan-rupee">₹</span>' +
+            '<span class="plan-amount">' + cleanHtml(p.priceINR) + '</span>' +
           '</div>' +
-          '<div class="plan-cycle">' + escapeHtml(plan.billingCycle) + '</div>' +
-          '<ul class="plan-features">' + featuresHtml + '</ul>' +
-          '<button type="button" class="' + btnClass + '" style="width:100%;margin-bottom:10px;" data-order-plan-idx="' + i + '">' +
-            '⚡ ' + escapeHtml(plan.ctaText || "Order Plan") +
+          '<div class="plan-billing">' + cleanHtml(p.cycle) + '</div>' +
+          '<ul class="plan-perk-list">' + perks + '</ul>' +
+          '<button type="button" class="' + btnCls + '" style="width:100%;margin-bottom:14px;" data-plan-order="' + i + '">' +
+            '⚒️ ' + cleanHtml(p.buttonText || "Craft Package") +
           '</button>' +
-          '<div style="display:flex;justify-content:center;gap:12px;font-size:0.78rem;color:var(--text-muted);">' +
-            '<span style="cursor:pointer;" data-order-plan-idx="' + i + '">🎮 Discord DM</span>' +
+          '<div style="display:flex;justify-content:center;gap:16px;font-size:0.84rem;color:var(--text-silver);">' +
+            '<span style="cursor:pointer;" data-plan-order="' + i + '">🎮 Discord DM</span>' +
             '<span>•</span>' +
-            '<span style="cursor:pointer;" data-order-plan-idx="' + i + '">📸 Instagram DM</span>' +
+            '<span style="cursor:pointer;" data-plan-order="' + i + '">📸 Instagram DM</span>' +
           '</div>' +
         '</div>';
     }
-    grid.innerHTML = html;
+    grid.innerHTML = out;
   }
 
   function renderReviews() {
     var grid = document.getElementById("reviews-grid");
-    var countEl = document.getElementById("reviews-count-text");
+    var sub = document.getElementById("reviews-count-line");
     if (!grid) return;
 
-    var verifiedTotal = 0;
-    for (var k = 0; k < state.reviews.length; k++) {
-      if (state.reviews[k].verified) verifiedTotal++;
-    }
-
-    if (countEl) {
-      countEl.textContent = state.reviews.length + " Total Reviews (" + verifiedTotal + " Owner-Verified Clients)";
-    }
-
-    var html = "";
+    var verifiedCount = 0;
     for (var i = 0; i < state.reviews.length; i++) {
-      var rev = state.reviews[i];
-      var rNum = Math.min(5, Math.max(1, Number(rev.rating) || 5));
-      var stars = "★★★★★".slice(0, rNum) + "☆☆☆☆☆".slice(0, 5 - rNum);
-      var fallbackAvatar = "https://ui-avatars.com/api/?name=" + encodeURIComponent(rev.name || "User") + "&background=ff2a5f&color=fff&bold=true";
-      var avatarSrc = rev.avatar && rev.avatar.trim() !== "" ? rev.avatar : fallbackAvatar;
+      if (state.reviews[i].verified) verifiedCount++;
+    }
+    if (sub) {
+      sub.textContent = state.reviews.length + " Creator Reviews (" + verifiedCount + " Owner-Verified Clients)";
+    }
 
-      var badgeHtml = rev.verified
-        ? '<span class="verified-badge">✔ Verified Client</span>'
-        : '<span class="unverified-badge">Community Post</span>';
+    var out = "";
+    for (var j = 0; j < state.reviews.length; j++) {
+      var r = state.reviews[j];
+      var count = Math.min(5, Math.max(1, Number(r.rating) || 5));
+      var stars = "★★★★★".slice(0, count) + "☆☆☆☆☆".slice(0, 5 - count);
+      var autoAva = "https://ui-avatars.com/api/?name=" + encodeURIComponent(r.name || "Creator") + "&background=52a535&color=fff&bold=true";
+      var ava = r.avatar && r.avatar.trim() !== "" ? r.avatar : autoAva;
 
-      html +=
-        '<div class="review-card">' +
-          '<div class="review-header">' +
-            '<div class="reviewer-profile">' +
-              '<img class="reviewer-avatar" src="' + escapeHtml(avatarSrc) + '" alt="' + escapeHtml(rev.name) + '" />' +
+      var badge = r.verified
+        ? '<span class="badge-verified">✔ Verified Client</span>'
+        : '<span class="badge-community">Community Post</span>';
+
+      out +=
+        '<div class="review-tile">' +
+          '<div class="review-top">' +
+            '<div class="review-user">' +
+              '<img class="review-photo" src="' + cleanHtml(ava) + '" alt="' + cleanHtml(r.name) + '" />' +
               '<div>' +
-                '<div class="reviewer-name-row">' +
-                  '<span class="reviewer-name">' + escapeHtml(rev.name) + '</span>' +
-                  badgeHtml +
+                '<div class="review-name-line">' +
+                  '<span class="review-name">' + cleanHtml(r.name) + '</span>' +
+                  badge +
                 '</div>' +
-                '<div class="reviewer-role">' + escapeHtml(rev.role || "Creator") + ' • ' + escapeHtml(rev.date || "Recent") + '</div>' +
+                '<div class="review-role-line">' + cleanHtml(r.role || "Creator") + ' • ' + cleanHtml(r.date || "Recent") + '</div>' +
               '</div>' +
             '</div>' +
-            '<div class="stars-gold">' + stars + '</div>' +
+            '<div class="review-stars">' + stars + '</div>' +
           '</div>' +
-          (rev.ctrProof ? '<div class="review-ctr-highlight">📈 ' + escapeHtml(rev.ctrProof) + '</div>' : '') +
-          '<p class="review-comment">"' + escapeHtml(rev.comment) + '"</p>' +
+          (r.resultTag ? '<div class="review-proof">📈 ' + cleanHtml(r.resultTag) + '</div>' : '') +
+          '<p class="review-body">"' + cleanHtml(r.comment) + '"</p>' +
         '</div>';
     }
-    grid.innerHTML = html;
+    grid.innerHTML = out;
   }
 
-  function openContactHub(planIdx) {
+  function openOrderModal(planIndex) {
     var p = state.profile || {};
-    var modal = document.getElementById("contact-hub-modal");
+    var modal = document.getElementById("order-modal");
     if (!modal) return;
 
-    var briefText = "Hey " + (p.designerName || "Binayak") + "! I checked out your portfolio and want to commission custom high-CTR thumbnails.";
-    if (planIdx !== null && planIdx !== undefined && state.plans[planIdx]) {
-      var pl = state.plans[planIdx];
-      briefText = "Hey " + (p.designerName || "Binayak") + "! I want to order the "" + pl.name + "" plan (₹" + pl.priceINR + " " + pl.billingCycle + "). Here is my channel link & video topic:";
+    var msg = "Hey " + (p.designerName || "Binayak") + "! I saw your Minecraft-themed thumbnail portfolio and want to commission custom high-CTR thumbnails.";
+    if (planIndex !== null && planIndex !== undefined && state.plans[planIndex]) {
+      var pl = state.plans[planIndex];
+      msg = "Hey " + (p.designerName || "Binayak") + "! I want to order the '" + pl.name + "' package (₹" + pl.priceINR + " " + pl.cycle + "). Here is my channel link and video idea:";
     }
 
-    var briefEl = document.getElementById("contact-brief-textarea");
-    if (briefEl) briefEl.value = briefText;
+    var box = document.getElementById("order-brief-box");
+    if (box) box.value = msg;
 
-    var dcHandleEl = document.getElementById("hub-discord-handle");
-    if (dcHandleEl) dcHandleEl.textContent = p.discordUsername || "binayak.design";
+    var dcText = document.getElementById("modal-discord-id");
+    if (dcText) dcText.textContent = p.discordUsername || "binayak.design";
 
-    var igHandleEl = document.getElementById("hub-insta-handle");
-    if (igHandleEl) igHandleEl.textContent = p.instagramHandle || "@binayak.design";
+    var igText = document.getElementById("modal-insta-id");
+    if (igText) igText.textContent = p.instagramHandle || "@binayak.design";
 
-    modal.classList.add("open");
+    modal.classList.add("active");
   }
 
-  function openLightbox(workId) {
-    var found = null;
+  function openInspectModal(workId) {
+    var item = null;
     for (var i = 0; i < state.portfolio.length; i++) {
       if (state.portfolio[i].id === workId) {
-        found = state.portfolio[i];
+        item = state.portfolio[i];
         break;
       }
     }
-    if (!found) return;
-    document.getElementById("lightbox-img").src = found.image;
-    document.getElementById("lightbox-title").textContent = found.title;
-    document.getElementById("lightbox-meta").textContent = found.creator + " • " + found.category + " • " + found.ctr + " CTR • " + found.viewsGenerated;
-    document.getElementById("lightbox-breakdown").textContent = found.breakdown || "";
-    document.getElementById("lightbox-modal").classList.add("open");
+    if (!item) return;
+
+    document.getElementById("inspect-img").src = item.image;
+    document.getElementById("inspect-title").textContent = item.title;
+    document.getElementById("inspect-meta").textContent = item.creator + " • " + item.category + " • " + item.ctr + " • " + item.views;
+    document.getElementById("inspect-notes").textContent = item.notes || "";
+    document.getElementById("inspect-modal").classList.add("active");
   }
 
-  function setupInteractiveLab() {
-    var baInput = document.getElementById("ba-slider-input");
-    var baClip = document.getElementById("ba-before-clip");
-    if (baInput && baClip) {
-      baInput.addEventListener("input", function (e) {
-        baClip.style.width = e.target.value + "%";
+  function initLabAndCalculator() {
+    var compSlider = document.getElementById("compare-slider");
+    var compClip = document.getElementById("compare-clip");
+    if (compSlider && compClip) {
+      compSlider.addEventListener("input", function (e) {
+        compClip.style.width = e.target.value + "%";
       });
     }
 
-    var impSlider = document.getElementById("calc-impressions");
-    var oldCtrSlider = document.getElementById("calc-old-ctr");
-    var newCtrSlider = document.getElementById("calc-new-ctr");
+    var impInput = document.getElementById("sim-impressions");
+    var oldCtrInput = document.getElementById("sim-old-ctr");
+    var newCtrInput = document.getElementById("sim-new-ctr");
 
-    function updateCalc() {
-      if (!impSlider || !oldCtrSlider || !newCtrSlider) return;
-      var impressions = Number(impSlider.value);
-      var oldCtr = Number(oldCtrSlider.value);
-      var newCtr = Number(newCtrSlider.value);
+    function recalc() {
+      if (!impInput || !oldCtrInput || !newCtrInput) return;
+      var imp = Number(impInput.value);
+      var oldC = Number(oldCtrInput.value);
+      var newC = Number(newCtrInput.value);
 
-      document.getElementById("calc-imp-val").textContent = impressions.toLocaleString("en-IN");
-      document.getElementById("calc-old-val").textContent = oldCtr.toFixed(1) + "%";
-      document.getElementById("calc-new-val").textContent = newCtr.toFixed(1) + "%";
+      document.getElementById("sim-imp-label").textContent = imp.toLocaleString("en-IN");
+      document.getElementById("sim-old-label").textContent = oldC.toFixed(1) + "%";
+      document.getElementById("sim-new-label").textContent = newC.toFixed(1) + "%";
 
-      var oldViews = Math.round(impressions * (oldCtr / 100));
-      var newViews = Math.round(impressions * (newCtr / 100));
-      var extraViews = Math.max(0, newViews - oldViews);
-      var extraRevenueINR = Math.round((extraViews / 1000) * 120);
+      var baseViews = Math.round(imp * (oldC / 100));
+      var newViews = Math.round(imp * (newC / 100));
+      var gainedViews = Math.max(0, newViews - baseViews);
+      var estINR = Math.round((gainedViews / 1000) * 120);
 
-      document.getElementById("calc-extra-views").textContent = "+" + extraViews.toLocaleString("en-IN");
-      document.getElementById("calc-extra-rev").textContent = "₹" + extraRevenueINR.toLocaleString("en-IN");
+      document.getElementById("sim-views-out").textContent = "+" + gainedViews.toLocaleString("en-IN");
+      document.getElementById("sim-rev-out").textContent = "₹" + estINR.toLocaleString("en-IN");
     }
 
-    if (impSlider) impSlider.addEventListener("input", updateCalc);
-    if (oldCtrSlider) oldCtrSlider.addEventListener("input", updateCalc);
-    if (newCtrSlider) newCtrSlider.addEventListener("input", updateCalc);
-    updateCalc();
+    if (impInput) impInput.addEventListener("input", recalc);
+    if (oldCtrInput) oldCtrInput.addEventListener("input", recalc);
+    if (newCtrInput) newCtrInput.addEventListener("input", recalc);
+    recalc();
   }
 
-  function setupPublicReviewForm() {
-    var openBtn = document.getElementById("open-public-review-btn");
-    var modal = document.getElementById("public-review-modal");
-    var closeBtn = document.getElementById("close-public-review-modal");
+  function initPublicReviewModal() {
+    var openBtn = document.getElementById("open-review-modal-btn");
+    var modal = document.getElementById("review-modal");
+    var closeBtn = document.getElementById("close-review-modal-btn");
     var form = document.getElementById("public-review-form");
-    var photoInput = document.getElementById("pub-rev-photo-file");
-    var uploadedPhotoDataUrl = "";
+    var fileInput = document.getElementById("rev-file-input");
+    var uploadedBase64 = "";
 
     if (openBtn && modal) {
       openBtn.addEventListener("click", function () {
-        modal.classList.add("open");
+        modal.classList.add("active");
       });
     }
     if (closeBtn && modal) {
       closeBtn.addEventListener("click", function () {
-        modal.classList.remove("open");
+        modal.classList.remove("active");
       });
     }
 
-    if (photoInput) {
-      photoInput.addEventListener("change", function (e) {
-        var file = e.target.files && e.target.files[0];
-        if (!file) return;
+    if (fileInput) {
+      fileInput.addEventListener("change", function (e) {
+        var f = e.target.files && e.target.files[0];
+        if (!f) return;
         var reader = new FileReader();
-        reader.onload = function (evt) {
-          uploadedPhotoDataUrl = evt.target.result;
+        reader.onload = function (ev) {
+          uploadedBase64 = ev.target.result;
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(f);
       });
     }
 
     if (form) {
       form.addEventListener("submit", function (e) {
         e.preventDefault();
-        var name = document.getElementById("pub-rev-name").value.trim();
-        var role = document.getElementById("pub-rev-role").value.trim() || "YouTube Creator";
-        var photoUrl = document.getElementById("pub-rev-photo-url").value.trim();
-        var rating = Number(document.getElementById("pub-rev-rating").value) || 5;
-        var ctrProof = document.getElementById("pub-rev-ctr").value.trim();
-        var comment = document.getElementById("pub-rev-comment").value.trim();
+        var name = document.getElementById("rev-name-in").value.trim();
+        var role = document.getElementById("rev-role-in").value.trim() || "YouTube Creator";
+        var urlIn = document.getElementById("rev-url-in").value.trim();
+        var stars = Number(document.getElementById("rev-stars-in").value) || 5;
+        var proof = document.getElementById("rev-proof-in").value.trim();
+        var text = document.getElementById("rev-text-in").value.trim();
 
-        if (!name || !comment) return;
+        if (!name || !text) return;
 
-        var avatar = uploadedPhotoDataUrl || photoUrl || ("https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=7928ca&color=fff&bold=true");
+        var finalPhoto = uploadedBase64 || urlIn || ("https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=52a535&color=fff&bold=true");
 
         state.reviews.unshift({
           id: "rev-" + Date.now(),
           name: name,
           role: role,
-          avatar: avatar,
-          rating: rating,
+          avatar: finalPhoto,
+          rating: stars,
           verified: false,
           date: new Date().toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
-          ctrProof: ctrProof || "Community Feedback",
-          comment: comment
+          resultTag: proof || "Community Submission",
+          comment: text
         });
 
         saveState();
         renderReviews();
-
         form.reset();
-        uploadedPhotoDataUrl = "";
-        modal.classList.remove("open");
-        showToast("✅ Review submitted! Posted as Community Submission.");
+        uploadedBase64 = "";
+        modal.classList.remove("active");
+        showToast("✅ Review posted to the live community wall!");
       });
     }
   }
 
   // ============================================================================
-  // OWNER ADMIN STUDIO (Uses built-in PIN screen inside modal, never blocked!)
+  // OWNER CRAFTING TABLE (ADMIN STUDIO)
   // ============================================================================
-  function renderAdminStudioBody() {
-    var container = document.getElementById("admin-tab-body");
-    var tabsBar = document.getElementById("admin-tabs-bar");
-    if (!container) return;
+  function renderAdminPanel() {
+    var body = document.getElementById("admin-panel-body");
+    var nav = document.getElementById("admin-tabs-nav");
+    if (!body) return;
 
     if (!adminUnlocked) {
-      if (tabsBar) tabsBar.style.display = "none";
-      container.innerHTML =
-        '<div style="max-width:400px;margin:24px auto;text-align:center;padding:24px;background:rgba(255,255,255,0.03);border:1px solid var(--border-light);border-radius:14px;">' +
-          '<h4 style="font-size:1.2rem;margin-bottom:8px;">🔒 Unlock Owner Admin Studio</h4>' +
-          '<p style="font-size:0.85rem;color:var(--text-sub);margin-bottom:16px;">Enter your Admin PIN to add thumbnails, verify reviews, or edit INR plans. (Default PIN: <strong>2026</strong>)</p>' +
-          '<form id="admin-pin-form" style="display:flex;gap:10px;">' +
-            '<input type="password" id="admin-pin-input" class="form-control" placeholder="Enter PIN (2026)" required />' +
+      if (nav) nav.style.display = "none";
+      body.innerHTML =
+        '<div style="max-width:460px;margin:24px auto;padding:32px;background:#141722;border:4px solid var(--border-pixel);text-align:center;">' +
+          '<h4 style="font-family:var(--font-pixel);font-size:1.05rem;color:var(--mc-gold);margin-bottom:12px;">🔒 Unlock Crafting Table (Admin)</h4>' +
+          '<p style="font-size:0.92rem;color:var(--text-silver);margin-bottom:20px;">Enter your Owner PIN to add thumbnails, grant Verified Client badges, or edit INR plans. (Default PIN: <strong>2026</strong>)</p>' +
+          '<form id="admin-pin-unlock-form" style="display:flex;gap:12px;">' +
+            '<input type="password" id="admin-pin-field" class="input-box" placeholder="Enter PIN (2026)" required />' +
             '<button type="submit" class="btn btn-primary">Unlock</button>' +
           '</form>' +
         '</div>';
 
-      var pinForm = document.getElementById("admin-pin-form");
-      if (pinForm) {
-        pinForm.addEventListener("submit", function (e) {
+      var pf = document.getElementById("admin-pin-unlock-form");
+      if (pf) {
+        pf.addEventListener("submit", function (e) {
           e.preventDefault();
-          var val = document.getElementById("admin-pin-input").value.trim();
-          var expected = String((state.profile && state.profile.adminPin) || "2026");
-          if (val === expected) {
+          var entered = document.getElementById("admin-pin-field").value.trim();
+          var correct = String((state.profile && state.profile.adminPin) || "2026");
+          if (entered === correct) {
             adminUnlocked = true;
-            if (tabsBar) tabsBar.style.display = "flex";
-            renderAdminStudioBody();
-            showToast("🔓 Admin Studio Unlocked!");
+            if (nav) nav.style.display = "flex";
+            renderAdminPanel();
+            showToast("🔓 Crafting Table Unlocked!");
           } else {
-            showToast("❌ Incorrect PIN! Default PIN is 2026.");
+            showToast("❌ Wrong PIN! Default PIN is 2026.");
           }
         });
       }
       return;
     }
 
-    if (tabsBar) tabsBar.style.display = "flex";
+    if (nav) nav.style.display = "flex";
 
-    if (currentAdminTab === "portfolio") {
-      var listHtml = "";
+    if (activeAdminTab === "portfolio") {
+      var rows = "";
       for (var i = 0; i < state.portfolio.length; i++) {
-        var it = state.portfolio[i];
-        listHtml +=
-          '<div class="admin-list-item">' +
-            '<div style="display:flex;align-items:center;gap:12px;">' +
-              '<img src="' + escapeHtml(it.image) + '" style="width:68px;height:38px;object-fit:cover;border-radius:6px;" />' +
+        var w = state.portfolio[i];
+        rows +=
+          '<div class="admin-item-row">' +
+            '<div style="display:flex;align-items:center;gap:14px;">' +
+              '<img src="' + cleanHtml(w.image) + '" style="width:76px;height:44px;object-fit:cover;border:2px solid var(--border-pixel);" />' +
               '<div>' +
-                '<div style="font-weight:700;font-size:0.9rem;">' + escapeHtml(it.title) + '</div>' +
-                '<div style="font-size:0.78rem;color:var(--text-sub);">' + escapeHtml(it.category) + ' • ' + escapeHtml(it.ctr) + ' CTR • ' + escapeHtml(it.viewsGenerated) + '</div>' +
+                '<div style="font-weight:700;font-size:0.95rem;color:var(--text-light);">' + cleanHtml(w.title) + '</div>' +
+                '<div style="font-size:0.82rem;color:var(--text-silver);">' + cleanHtml(w.category) + ' • ' + cleanHtml(w.ctr) + ' • ' + cleanHtml(w.views) + '</div>' +
               '</div>' +
             '</div>' +
-            '<button type="button" class="btn btn-secondary btn-sm" style="color:#ff4d6d;" data-del-work="' + i + '">Delete</button>' +
+            '<button type="button" class="btn btn-ghost btn-sm" style="background:var(--mc-redstone);" data-remove-work="' + i + '">Delete</button>' +
           '</div>';
       }
 
-      container.innerHTML =
-        '<h4 style="margin-bottom:10px;">Add New Thumbnail / Graphic</h4>' +
-        '<form id="admin-add-work-form" style="background:rgba(255,255,255,0.03);padding:16px;border-radius:12px;margin-bottom:20px;border:1px solid var(--border-light);">' +
-          '<div class="form-row-2">' +
-            '<div class="form-group"><label>Video / Project Title *</label><input type="text" id="aw-title" class="form-control" placeholder="e.g. How I Built a 10M Sub Channel" required /></div>' +
-            '<div class="form-group"><label>Client / Creator Name *</label><input type="text" id="aw-creator" class="form-control" placeholder="e.g. Gaming / Tech Creator" required /></div>' +
+      body.innerHTML =
+        '<h4 style="font-family:var(--font-pixel);font-size:0.92rem;color:var(--mc-gold);margin-bottom:14px;">+ Craft New Thumbnail Slot</h4>' +
+        '<form id="admin-work-form" style="background:#141722;padding:22px;margin-bottom:28px;border:3px solid var(--border-pixel);">' +
+          '<div class="grid-2">' +
+            '<div class="field-group"><label>Video / Project Title *</label><input type="text" id="nw-title" class="input-box" placeholder="e.g. I Survived 100 Days in Hardcore" required /></div>' +
+            '<div class="field-group"><label>Creator / Client Name *</label><input type="text" id="nw-creator" class="input-box" placeholder="e.g. Gaming / Tech Creator" required /></div>' +
           '</div>' +
-          '<div class="form-row-2">' +
-            '<div class="form-group"><label>Category *</label><input type="text" id="aw-category" class="form-control" value="Gaming & Esports" required /></div>' +
-            '<div class="form-group"><label>Image URL or Local Path (e.g. images/thumb1.jpg) *</label><input type="text" id="aw-image" class="form-control" placeholder="https://... or images/thumb1.jpg" required /></div>' +
+          '<div class="grid-2">' +
+            '<div class="field-group"><label>Category *</label><input type="text" id="nw-cat" class="input-box" value="Gaming & SMP" required /></div>' +
+            '<div class="field-group"><label>Image URL or Local Path (e.g. images/thumb1.jpg) *</label><input type="text" id="nw-img" class="input-box" placeholder="https://... or images/thumb1.jpg" required /></div>' +
           '</div>' +
-          '<div class="form-row-2">' +
-            '<div class="form-group"><label>CTR Achieved</label><input type="text" id="aw-ctr" class="form-control" value="15.4%" /></div>' +
-            '<div class="form-group"><label>Views Generated</label><input type="text" id="aw-views" class="form-control" value="2.1M Views" /></div>' +
+          '<div class="grid-2">' +
+            '<div class="field-group"><label>CTR Result (e.g. 16.2% CTR)</label><input type="text" id="nw-ctr" class="input-box" value="15.8% CTR" /></div>' +
+            '<div class="field-group"><label>Views Generated (e.g. 2.5M Views)</label><input type="text" id="nw-views" class="input-box" value="2.1M Views" /></div>' +
           '</div>' +
-          '<div class="form-group"><label>Design & Psychology Breakdown</label><input type="text" id="aw-breakdown" class="form-control" placeholder="Lighting, color grading, or focal hook notes..." /></div>' +
-          '<button type="submit" class="btn btn-primary btn-sm">+ Add Thumbnail to Portfolio</button>' +
+          '<div class="field-group"><label>Composition & Lighting Notes</label><input type="text" id="nw-notes" class="input-box" placeholder="Short breakdown of visual hook & color grading..." /></div>' +
+          '<button type="submit" class="btn btn-primary btn-sm">+ Add Thumbnail to Inventory</button>' +
         '</form>' +
-        '<h4 style="margin-bottom:10px;">Manage Existing Portfolio (' + state.portfolio.length + ')</h4>' +
-        '<div>' + listHtml + '</div>';
+        '<h4 style="font-family:var(--font-pixel);font-size:0.92rem;color:var(--text-light);margin-bottom:14px;">Existing Inventory (' + state.portfolio.length + ')</h4>' +
+        '<div>' + rows + '</div>';
 
-      document.getElementById("admin-add-work-form").addEventListener("submit", function (e) {
+      document.getElementById("admin-work-form").addEventListener("submit", function (e) {
         e.preventDefault();
-        var cat = document.getElementById("aw-category").value.trim() || "General";
-        if (state.categories.indexOf(cat) === -1) {
-          state.categories.push(cat);
+        var c = document.getElementById("nw-cat").value.trim() || "General";
+        if (state.categories.indexOf(c) === -1) {
+          state.categories.push(c);
         }
         state.portfolio.unshift({
           id: "work-" + Date.now(),
-          title: document.getElementById("aw-title").value.trim(),
-          creator: document.getElementById("aw-creator").value.trim(),
-          category: cat,
-          image: document.getElementById("aw-image").value.trim(),
-          ctr: document.getElementById("aw-ctr").value.trim() || "15.0%",
-          viewsGenerated: document.getElementById("aw-views").value.trim() || "1M+ Views",
-          duration: "15:20",
+          title: document.getElementById("nw-title").value.trim(),
+          creator: document.getElementById("nw-creator").value.trim(),
+          category: c,
+          image: document.getElementById("nw-img").value.trim(),
+          ctr: document.getElementById("nw-ctr").value.trim() || "15.0% CTR",
+          views: document.getElementById("nw-views").value.trim() || "1M+ Views",
+          duration: "14:50",
           featured: true,
-          breakdown: document.getElementById("aw-breakdown").value.trim()
+          notes: document.getElementById("nw-notes").value.trim()
         });
         saveState();
         renderCategories();
         renderPortfolio();
-        renderAdminStudioBody();
-        showToast("✅ New thumbnail added!");
+        renderAdminPanel();
+        showToast("✅ Added new thumbnail to inventory!");
       });
-    } else if (currentAdminTab === "reviews") {
-      var revListHtml = "";
+    } else if (activeAdminTab === "reviews") {
+      var revRows = "";
       for (var r = 0; r < state.reviews.length; r++) {
         var rv = state.reviews[r];
-        revListHtml +=
-          '<div class="admin-list-item">' +
+        revRows +=
+          '<div class="admin-item-row">' +
             '<div>' +
-              '<div style="font-weight:700;font-size:0.9rem;">' +
-                escapeHtml(rv.name) + ' ' +
+              '<div style="font-weight:700;font-size:0.95rem;color:var(--text-light);">' +
+                cleanHtml(rv.name) + ' ' +
                 (rv.verified
-                  ? '<span style="color:#38b6ff;font-size:0.75rem;">[✔ Verified Badge ON]</span>'
-                  : '<span style="color:var(--text-muted);font-size:0.75rem;">[Unverified Community Post]</span>') +
+                  ? '<span style="color:var(--mc-diamond);font-size:0.8rem;">[✔ Verified Client ON]</span>'
+                  : '<span style="color:var(--text-silver);font-size:0.8rem;">[Unverified Community Post]</span>') +
               '</div>' +
-              '<div style="font-size:0.8rem;color:var(--text-sub);">' + escapeHtml(rv.comment.slice(0, 80)) + '...</div>' +
+              '<div style="font-size:0.85rem;color:var(--text-silver);">' + cleanHtml(rv.comment.slice(0, 80)) + '...</div>' +
             '</div>' +
-            '<div style="display:flex;gap:8px;">' +
-              '<button type="button" class="btn btn-secondary btn-sm" data-toggle-verify="' + r + '">' +
-                (rv.verified ? "Remove Badge" : "✔ Give Verified Badge") +
+            '<div style="display:flex;gap:10px;">' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-flip-verify="' + r + '">' +
+                (rv.verified ? "Remove Badge" : "✔ Grant Verified Badge") +
               '</button>' +
-              '<button type="button" class="btn btn-secondary btn-sm" style="color:#ff4d6d;" data-del-review="' + r + '">Delete</button>' +
+              '<button type="button" class="btn btn-ghost btn-sm" style="background:var(--mc-redstone);" data-remove-review="' + r + '">Delete</button>' +
             '</div>' +
           '</div>';
       }
 
-      container.innerHTML =
-        '<h4 style="margin-bottom:10px;">Add Review From Your Side (With Verified Client Badge ✔)</h4>' +
-        '<form id="admin-add-rev-form" style="background:rgba(255,255,255,0.03);padding:16px;border-radius:12px;margin-bottom:20px;border:1px solid var(--border-light);">' +
-          '<div class="form-row-2">' +
-            '<div class="form-group"><label>Client Name *</label><input type="text" id="ar-name" class="form-control" placeholder="e.g. Kabir Sharma" required /></div>' +
-            '<div class="form-group"><label>Channel Niche & Subs *</label><input type="text" id="ar-role" class="form-control" placeholder="e.g. Gaming Creator (850K Subs)" required /></div>' +
+      body.innerHTML =
+        '<h4 style="font-family:var(--font-pixel);font-size:0.92rem;color:var(--mc-gold);margin-bottom:14px;">+ Add Client Review From Your Side (Verified Badge ✔)</h4>' +
+        '<form id="admin-rev-form" style="background:#141722;padding:22px;margin-bottom:28px;border:3px solid var(--border-pixel);">' +
+          '<div class="grid-2">' +
+            '<div class="field-group"><label>Client Name *</label><input type="text" id="nr-name" class="input-box" placeholder="e.g. Kabir Sharma" required /></div>' +
+            '<div class="field-group"><label>Channel & Subscriber Count *</label><input type="text" id="nr-role" class="input-box" placeholder="e.g. Gaming Creator (900K Subs)" required /></div>' +
           '</div>' +
-          '<div class="form-row-2">' +
-            '<div class="form-group"><label>Client Photo URL (Optional)</label><input type="text" id="ar-avatar" class="form-control" placeholder="https://... or leave blank" /></div>' +
-            '<div class="form-group"><label>CTR / Views Result Highlight</label><input type="text" id="ar-proof" class="form-control" placeholder="e.g. CTR jumped from 5% to 15.8%" /></div>' +
+          '<div class="grid-2">' +
+            '<div class="field-group"><label>Client Photo URL (Leave blank for auto-avatar)</label><input type="text" id="nr-photo" class="input-box" placeholder="https://..." /></div>' +
+            '<div class="field-group"><label>CTR / Views Result Tag</label><input type="text" id="nr-proof" class="input-box" placeholder="e.g. CTR jumped 5% → 15.6%" /></div>' +
           '</div>' +
-          '<div class="form-row-2">' +
-            '<div class="form-group"><label>Star Rating (1 to 5)</label><input type="number" id="ar-rating" class="form-control" min="1" max="5" value="5" /></div>' +
-            '<div class="form-group"><label>Verified Badge Status</label><select id="ar-verified" class="form-control"><option value="true" selected>✔ Verified Client Badge ON</option><option value="false">Unverified Community Post</option></select></div>' +
+          '<div class="grid-2">' +
+            '<div class="field-group"><label>Rating (1-5)</label><input type="number" id="nr-stars" class="input-box" min="1" max="5" value="5" /></div>' +
+            '<div class="field-group"><label>Verified Badge</label><select id="nr-verified" class="input-box"><option value="true" selected>✔ Verified Client Badge ON</option><option value="false">Unverified Community Post</option></select></div>' +
           '</div>' +
-          '<div class="form-group"><label>Review Comment *</label><textarea id="ar-comment" class="form-control" rows="2" required></textarea></div>' +
+          '<div class="field-group"><label>Review Text *</label><textarea id="nr-comment" class="input-box" rows="2" required></textarea></div>' +
           '<button type="submit" class="btn btn-primary btn-sm">+ Publish Review</button>' +
         '</form>' +
-        '<h4 style="margin-bottom:10px;">Manage All Reviews (' + state.reviews.length + ')</h4>' +
-        '<div>' + revListHtml + '</div>';
+        '<h4 style="font-family:var(--font-pixel);font-size:0.92rem;color:var(--text-light);margin-bottom:14px;">Manage All Reviews (' + state.reviews.length + ')</h4>' +
+        '<div>' + revRows + '</div>';
 
-      document.getElementById("admin-add-rev-form").addEventListener("submit", function (e) {
+      document.getElementById("admin-rev-form").addEventListener("submit", function (e) {
         e.preventDefault();
-        var nm = document.getElementById("ar-name").value.trim();
         state.reviews.unshift({
           id: "rev-" + Date.now(),
-          name: nm,
-          role: document.getElementById("ar-role").value.trim(),
-          avatar: document.getElementById("ar-avatar").value.trim(),
-          ctrProof: document.getElementById("ar-proof").value.trim() || "Verified Client",
-          rating: Number(document.getElementById("ar-rating").value) || 5,
-          verified: document.getElementById("ar-verified").value === "true",
+          name: document.getElementById("nr-name").value.trim(),
+          role: document.getElementById("nr-role").value.trim(),
+          avatar: document.getElementById("nr-photo").value.trim(),
+          resultTag: document.getElementById("nr-proof").value.trim() || "Verified Client",
+          rating: Number(document.getElementById("nr-stars").value) || 5,
+          verified: document.getElementById("nr-verified").value === "true",
           date: new Date().toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
-          comment: document.getElementById("ar-comment").value.trim()
+          comment: document.getElementById("nr-comment").value.trim()
         });
         saveState();
         renderReviews();
-        renderAdminStudioBody();
-        showToast("✅ Client review published!");
+        renderAdminPanel();
+        showToast("✅ Published new client review!");
       });
-    } else if (currentAdminTab === "stats") {
-      var statsFormHtml = "";
+    } else if (activeAdminTab === "stats") {
+      var stHtml = "";
       for (var s = 0; s < state.stats.length; s++) {
         var st = state.stats[s];
-        statsFormHtml +=
-          '<div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;margin-bottom:10px;border:1px solid var(--border-light);">' +
-            '<div class="form-row-2">' +
-              '<div class="form-group"><label>Stat Label #' + (s + 1) + '</label><input type="text" class="form-control st-label" data-idx="' + s + '" value="' + escapeHtml(st.label) + '" /></div>' +
-              '<div class="form-group"><label>Display Value (e.g. 145.8M+ or +14.6%)</label><input type="text" class="form-control st-val" data-idx="' + s + '" value="' + escapeHtml(st.value) + '" /></div>' +
+        stHtml +=
+          '<div style="background:#141722;padding:18px;margin-bottom:14px;border:3px solid var(--border-pixel);">' +
+            '<div class="grid-2">' +
+              '<div class="field-group"><label>Stat Title #' + (s + 1) + '</label><input type="text" class="input-box js-st-label" data-idx="' + s + '" value="' + cleanHtml(st.label) + '" /></div>' +
+              '<div class="field-group"><label>Big Number (e.g. 145.8M+ or +14.6%)</label><input type="text" class="input-box js-st-val" data-idx="' + s + '" value="' + cleanHtml(st.value) + '" /></div>' +
             '</div>' +
-            '<div class="form-group"><label>Subtext Proof</label><input type="text" class="form-control st-sub" data-idx="' + s + '" value="' + escapeHtml(st.subtext) + '" /></div>' +
+            '<div class="field-group"><label>Sub-detail Text</label><input type="text" class="input-box js-st-detail" data-idx="' + s + '" value="' + cleanHtml(st.detail) + '" /></div>' +
           '</div>';
       }
 
-      container.innerHTML =
-        '<h4 style="margin-bottom:10px;">Edit CTR & Views Generated Counters</h4>' +
-        statsFormHtml +
-        '<button type="button" id="save-stats-btn" class="btn btn-primary btn-sm">Save Stats</button>';
+      body.innerHTML =
+        '<h4 style="font-family:var(--font-pixel);font-size:0.92rem;color:var(--mc-gold);margin-bottom:14px;">Update XP, CTR & Views Stats</h4>' +
+        stHtml +
+        '<button type="button" id="save-stats-action" class="btn btn-primary btn-sm">Save Stats</button>';
 
-      document.getElementById("save-stats-btn").addEventListener("click", function () {
-        var labels = container.querySelectorAll(".st-label");
-        var vals = container.querySelectorAll(".st-val");
-        var subs = container.querySelectorAll(".st-sub");
-        for (var i = 0; i < labels.length; i++) {
-          var idx = Number(labels[i].getAttribute("data-idx"));
-          state.stats[idx].label = labels[i].value.trim();
-          state.stats[idx].value = vals[i].value.trim();
-          state.stats[idx].subtext = subs[i].value.trim();
+      document.getElementById("save-stats-action").addEventListener("click", function () {
+        var lEls = body.querySelectorAll(".js-st-label");
+        var vEls = body.querySelectorAll(".js-st-val");
+        var dEls = body.querySelectorAll(".js-st-detail");
+        for (var i = 0; i < lEls.length; i++) {
+          var idx = Number(lEls[i].getAttribute("data-idx"));
+          state.stats[idx].label = lEls[i].value.trim();
+          state.stats[idx].value = vEls[i].value.trim();
+          state.stats[idx].detail = dEls[i].value.trim();
         }
         saveState();
         renderStats();
-        showToast("✅ CTR & Views stats updated!");
+        showToast("✅ Stats updated live!");
       });
-    } else if (currentAdminTab === "plans") {
-      var plansHtml = "";
+    } else if (activeAdminTab === "plans") {
+      var plHtml = "";
       for (var pIdx = 0; pIdx < state.plans.length; pIdx++) {
         var pl = state.plans[pIdx];
-        plansHtml +=
-          '<div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;margin-bottom:12px;border:1px solid var(--border-light);">' +
-            '<div class="form-row-2">' +
-              '<div class="form-group"><label>Plan Name</label><input type="text" class="form-control pl-name" data-idx="' + pIdx + '" value="' + escapeHtml(pl.name) + '" /></div>' +
-              '<div class="form-group"><label>Price in INR (₹)</label><input type="text" class="form-control pl-price" data-idx="' + pIdx + '" value="' + escapeHtml(pl.priceINR) + '" /></div>' +
+        plHtml +=
+          '<div style="background:#141722;padding:18px;margin-bottom:14px;border:3px solid var(--border-pixel);">' +
+            '<div class="grid-2">' +
+              '<div class="field-group"><label>Plan Name</label><input type="text" class="input-box js-pl-name" data-idx="' + pIdx + '" value="' + cleanHtml(pl.name) + '" /></div>' +
+              '<div class="field-group"><label>Price in INR (₹)</label><input type="text" class="input-box js-pl-price" data-idx="' + pIdx + '" value="' + cleanHtml(pl.priceINR) + '" /></div>' +
             '</div>' +
-            '<div class="form-row-2">' +
-              '<div class="form-group"><label>Billing Cycle</label><input type="text" class="form-control pl-cycle" data-idx="' + pIdx + '" value="' + escapeHtml(pl.billingCycle) + '" /></div>' +
-              '<div class="form-group"><label>Badge Text</label><input type="text" class="form-control pl-badge" data-idx="' + pIdx + '" value="' + escapeHtml(pl.badge || "") + '" /></div>' +
+            '<div class="grid-2">' +
+              '<div class="field-group"><label>Billing Subtitle</label><input type="text" class="input-box js-pl-cycle" data-idx="' + pIdx + '" value="' + cleanHtml(pl.cycle) + '" /></div>' +
+              '<div class="field-group"><label>Ribbon Badge</label><input type="text" class="input-box js-pl-badge" data-idx="' + pIdx + '" value="' + cleanHtml(pl.badge || "") + '" /></div>' +
             '</div>' +
-            '<div class="form-group"><label>Features (One feature per line)</label><textarea class="form-control pl-features" data-idx="' + pIdx + '" rows="4">' + escapeHtml((pl.features || []).join("\n")) + '</textarea></div>' +
+            '<div class="field-group"><label>Features (One per line)</label><textarea class="input-box js-pl-feats" data-idx="' + pIdx + '" rows="4">' + cleanHtml((pl.features || []).join("\n")) + '</textarea></div>' +
           '</div>';
       }
 
-      container.innerHTML =
-        '<h4 style="margin-bottom:10px;">Customize Thumbnail Designing Plans (₹ INR)</h4>' +
-        plansHtml +
-        '<button type="button" id="save-plans-btn" class="btn btn-primary btn-sm">Save INR Plans</button>';
+      body.innerHTML =
+        '<h4 style="font-family:var(--font-pixel);font-size:0.92rem;color:var(--mc-gold);margin-bottom:14px;">Edit Thumbnail Designing Plans (₹ INR)</h4>' +
+        plHtml +
+        '<button type="button" id="save-plans-action" class="btn btn-primary btn-sm">Save INR Plans</button>';
 
-      document.getElementById("save-plans-btn").addEventListener("click", function () {
-        var names = container.querySelectorAll(".pl-name");
-        var prices = container.querySelectorAll(".pl-price");
-        var cycles = container.querySelectorAll(".pl-cycle");
-        var badges = container.querySelectorAll(".pl-badge");
-        var feats = container.querySelectorAll(".pl-features");
-        for (var i = 0; i < names.length; i++) {
-          var idx = Number(names[i].getAttribute("data-idx"));
-          state.plans[idx].name = names[i].value.trim();
-          state.plans[idx].priceINR = prices[i].value.trim();
-          state.plans[idx].billingCycle = cycles[i].value.trim();
-          state.plans[idx].badge = badges[i].value.trim();
-          state.plans[idx].features = feats[i].value.split("\n").map(function (line) { return line.trim(); }).filter(Boolean);
+      document.getElementById("save-plans-action").addEventListener("click", function () {
+        var nEls = body.querySelectorAll(".js-pl-name");
+        var pEls = body.querySelectorAll(".js-pl-price");
+        var cEls = body.querySelectorAll(".js-pl-cycle");
+        var bEls = body.querySelectorAll(".js-pl-badge");
+        var fEls = body.querySelectorAll(".js-pl-feats");
+        for (var i = 0; i < nEls.length; i++) {
+          var idx = Number(nEls[i].getAttribute("data-idx"));
+          state.plans[idx].name = nEls[i].value.trim();
+          state.plans[idx].priceINR = pEls[i].value.trim();
+          state.plans[idx].cycle = cEls[i].value.trim();
+          state.plans[idx].badge = bEls[i].value.trim();
+          state.plans[idx].features = fEls[i].value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
         }
         saveState();
         renderPlans();
         showToast("✅ INR Pricing Plans updated!");
       });
-    } else if (currentAdminTab === "brand") {
+    } else if (activeAdminTab === "brand") {
       var pr = state.profile || {};
-      container.innerHTML =
-        '<h4 style="margin-bottom:10px;">Discord, Instagram & Brand Settings</h4>' +
-        '<div class="form-row-2">' +
-          '<div class="form-group"><label>Brand Name</label><input type="text" id="br-brand" class="form-control" value="' + escapeHtml(pr.brandName || "") + '" /></div>' +
-          '<div class="form-group"><label>Designer Name</label><input type="text" id="br-name" class="form-control" value="' + escapeHtml(pr.designerName || "") + '" /></div>' +
+      body.innerHTML =
+        '<h4 style="font-family:var(--font-pixel);font-size:0.92rem;color:var(--mc-gold);margin-bottom:14px;">Discord, Instagram & Server Brand Settings</h4>' +
+        '<div class="grid-2">' +
+          '<div class="field-group"><label>Brand Name</label><input type="text" id="ed-brand" class="input-box" value="' + cleanHtml(pr.brandName || "") + '" /></div>' +
+          '<div class="field-group"><label>Your Name</label><input type="text" id="ed-name" class="input-box" value="' + cleanHtml(pr.designerName || "") + '" /></div>' +
         '</div>' +
-        '<div class="form-row-2">' +
-          '<div class="form-group"><label>🎮 Discord Username (Copied on Click)</label><input type="text" id="br-dc-user" class="form-control" value="' + escapeHtml(pr.discordUsername || "") + '" /></div>' +
-          '<div class="form-group"><label>🎮 Discord Server / Profile URL</label><input type="text" id="br-dc-url" class="form-control" value="' + escapeHtml(pr.discordInviteUrl || "") + '" /></div>' +
+        '<div class="grid-2">' +
+          '<div class="field-group"><label>🎮 Discord Username (Copied on click)</label><input type="text" id="ed-dc-user" class="input-box" value="' + cleanHtml(pr.discordUsername || "") + '" /></div>' +
+          '<div class="field-group"><label>🎮 Discord Server / Profile Link</label><input type="text" id="ed-dc-url" class="input-box" value="' + cleanHtml(pr.discordUrl || "") + '" /></div>' +
         '</div>' +
-        '<div class="form-row-2">' +
-          '<div class="form-group"><label>📸 Instagram Handle (@)</label><input type="text" id="br-ig-handle" class="form-control" value="' + escapeHtml(pr.instagramHandle || "") + '" /></div>' +
-          '<div class="form-group"><label>📸 Instagram Full URL</label><input type="text" id="br-ig-url" class="form-control" value="' + escapeHtml(pr.instagramUrl || "") + '" /></div>' +
+        '<div class="grid-2">' +
+          '<div class="field-group"><label>📸 Instagram Handle (@)</label><input type="text" id="ed-ig-handle" class="input-box" value="' + cleanHtml(pr.instagramHandle || "") + '" /></div>' +
+          '<div class="field-group"><label>📸 Instagram Profile URL</label><input type="text" id="ed-ig-url" class="input-box" value="' + cleanHtml(pr.instagramUrl || "") + '" /></div>' +
         '</div>' +
-        '<div class="form-row-2">' +
-          '<div class="form-group"><label>Primary Accent Color</label><input type="color" id="br-c1" class="form-control" style="height:42px;" value="' + escapeHtml(pr.accentColor || "#ff2a5f") + '" /></div>' +
-          '<div class="form-group"><label>Secondary Accent Color</label><input type="color" id="br-c2" class="form-control" style="height:42px;" value="' + escapeHtml(pr.secondaryColor || "#7928ca") + '" /></div>' +
+        '<div class="grid-2">' +
+          '<div class="field-group"><label>Primary Block Color (Hex)</label><input type="color" id="ed-c1" class="input-box" style="height:46px;" value="' + cleanHtml(pr.primaryColor || "#52a535") + '" /></div>' +
+          '<div class="field-group"><label>Gold / Highlight Color (Hex)</label><input type="color" id="ed-c2" class="input-box" style="height:46px;" value="' + cleanHtml(pr.secondaryColor || "#ffaa00") + '" /></div>' +
         '</div>' +
-        '<div class="form-group"><label>Availability Banner Text</label><input type="text" id="br-avail" class="form-control" value="' + escapeHtml(pr.availabilityText || "") + '" /></div>' +
-        '<div class="form-group"><label>Hero Subtitle</label><textarea id="br-sub" class="form-control" rows="2">' + escapeHtml(pr.heroSubtitle || "") + '</textarea></div>' +
-        '<button type="button" id="save-brand-btn" class="btn btn-primary btn-sm">Save Brand & Contact Settings</button>';
+        '<div class="field-group"><label>Server Status Text</label><input type="text" id="ed-avail" class="input-box" value="' + cleanHtml(pr.availabilityText || "") + '" /></div>' +
+        '<div class="field-group"><label>Hero Subtitle</label><textarea id="ed-sub" class="input-box" rows="2">' + cleanHtml(pr.heroSubtitle || "") + '</textarea></div>' +
+        '<button type="button" id="save-brand-action" class="btn btn-primary btn-sm">Save Brand Settings</button>';
 
-      document.getElementById("save-brand-btn").addEventListener("click", function () {
-        state.profile.brandName = document.getElementById("br-brand").value.trim();
-        state.profile.designerName = document.getElementById("br-name").value.trim();
-        state.profile.discordUsername = document.getElementById("br-dc-user").value.trim();
-        state.profile.discordInviteUrl = document.getElementById("br-dc-url").value.trim();
-        state.profile.instagramHandle = document.getElementById("br-ig-handle").value.trim();
-        state.profile.instagramUrl = document.getElementById("br-ig-url").value.trim();
-        state.profile.accentColor = document.getElementById("br-c1").value;
-        state.profile.secondaryColor = document.getElementById("br-c2").value;
-        state.profile.availabilityText = document.getElementById("br-avail").value.trim();
-        state.profile.heroSubtitle = document.getElementById("br-sub").value.trim();
+      document.getElementById("save-brand-action").addEventListener("click", function () {
+        state.profile.brandName = document.getElementById("ed-brand").value.trim();
+        state.profile.designerName = document.getElementById("ed-name").value.trim();
+        state.profile.discordUsername = document.getElementById("ed-dc-user").value.trim();
+        state.profile.discordUrl = document.getElementById("ed-dc-url").value.trim();
+        state.profile.instagramHandle = document.getElementById("ed-ig-handle").value.trim();
+        state.profile.instagramUrl = document.getElementById("ed-ig-url").value.trim();
+        state.profile.primaryColor = document.getElementById("ed-c1").value;
+        state.profile.secondaryColor = document.getElementById("ed-c2").value;
+        state.profile.availabilityText = document.getElementById("ed-avail").value.trim();
+        state.profile.heroSubtitle = document.getElementById("ed-sub").value.trim();
         saveState();
-        applyThemeColors();
-        renderProfileAndHero();
-        showToast("✅ Brand, Discord & Instagram settings saved!");
+        applyTheme();
+        renderHeroAndProfile();
+        showToast("✅ Brand, Discord & Instagram updated!");
       });
     }
   }
 
-  // Master event delegation for the entire page (Zero inline onclick bugs!)
-  function setupGlobalClicks() {
+  function setupDelegatedClicks() {
     document.addEventListener("click", function (e) {
-      var target = e.target;
+      var t = e.target;
 
-      // 1. Category filter pill
-      var catBtn = target.closest("[data-cat]");
-      if (catBtn) {
-        activeCategory = catBtn.getAttribute("data-cat");
+      var catEl = t.closest("[data-filter-cat]");
+      if (catEl) {
+        selectedCategory = catEl.getAttribute("data-filter-cat");
         renderCategories();
         renderPortfolio();
         return;
       }
 
-      // 2. Lightbox trigger
-      var lbTrigger = target.closest("[data-lightbox-id]");
-      if (lbTrigger) {
-        openLightbox(lbTrigger.getAttribute("data-lightbox-id"));
+      var inspectEl = t.closest("[data-inspect-id]");
+      if (inspectEl) {
+        openInspectModal(inspectEl.getAttribute("data-inspect-id"));
         return;
       }
 
-      // 3. Plan Order trigger
-      var planTrigger = target.closest("[data-order-plan-idx]");
-      if (planTrigger) {
-        var pIdx = Number(planTrigger.getAttribute("data-order-plan-idx"));
-        openContactHub(pIdx);
+      var orderEl = t.closest("[data-plan-order]");
+      if (orderEl) {
+        var idx = Number(orderEl.getAttribute("data-plan-order"));
+        openOrderModal(idx);
         return;
       }
 
-      // 4. Admin delete portfolio item
-      var delWorkBtn = target.closest("[data-del-work]");
-      if (delWorkBtn) {
-        var wIdx = Number(delWorkBtn.getAttribute("data-del-work"));
+      var delWork = t.closest("[data-remove-work]");
+      if (delWork) {
+        var wIdx = Number(delWork.getAttribute("data-remove-work"));
         state.portfolio.splice(wIdx, 1);
         saveState();
         renderPortfolio();
-        renderAdminStudioBody();
-        showToast("🗑 Thumbnail removed.");
+        renderAdminPanel();
+        showToast("🗑 Removed thumbnail.");
         return;
       }
 
-      // 5. Admin toggle review verified badge
-      var verifyBtn = target.closest("[data-toggle-verify]");
-      if (verifyBtn) {
-        var rIdx = Number(verifyBtn.getAttribute("data-toggle-verify"));
+      var flipVer = t.closest("[data-flip-verify]");
+      if (flipVer) {
+        var rIdx = Number(flipVer.getAttribute("data-flip-verify"));
         state.reviews[rIdx].verified = !state.reviews[rIdx].verified;
         saveState();
         renderReviews();
-        renderAdminStudioBody();
-        showToast(state.reviews[rIdx].verified ? "✔ Verified Badge enabled!" : "Verified Badge removed.");
+        renderAdminPanel();
+        showToast(state.reviews[rIdx].verified ? "✔ Verified Client badge granted!" : "Verified badge removed.");
         return;
       }
 
-      // 6. Admin delete review
-      var delRevBtn = target.closest("[data-del-review]");
-      if (delRevBtn) {
-        var dIdx = Number(delRevBtn.getAttribute("data-del-review"));
+      var delRev = t.closest("[data-remove-review]");
+      if (delRev) {
+        var dIdx = Number(delRev.getAttribute("data-remove-review"));
         state.reviews.splice(dIdx, 1);
         saveState();
         renderReviews();
-        renderAdminStudioBody();
+        renderAdminPanel();
         showToast("🗑 Review deleted.");
         return;
       }
@@ -815,166 +810,157 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    applyThemeColors();
-    renderProfileAndHero();
+    applyTheme();
+    renderHeroAndProfile();
     renderStats();
     renderCategories();
     renderPortfolio();
     renderPlans();
     renderReviews();
-    setupInteractiveLab();
-    setupPublicReviewForm();
-    setupGlobalClicks();
+    initLabAndCalculator();
+    initPublicReviewModal();
+    setupDelegatedClicks();
 
-    // Navbar & Hero Discord copy buttons
-    var dcCopyBtns = document.querySelectorAll(".js-copy-discord");
-    for (var i = 0; i < dcCopyBtns.length; i++) {
-      dcCopyBtns[i].addEventListener("click", function () {
-        var handle = (state.profile && state.profile.discordUsername) || "binayak.design";
-        copyToClipboard(handle, "🎮 Copied Discord ID: " + handle);
+    var dcBtns = document.querySelectorAll(".js-discord-copy");
+    for (var i = 0; i < dcBtns.length; i++) {
+      dcBtns[i].addEventListener("click", function () {
+        var id = (state.profile && state.profile.discordUsername) || "binayak.design";
+        copyText(id, "🎮 Copied Discord Username: " + id);
       });
     }
 
-    // Footer Instagram DM button
-    var openHubBtns = document.querySelectorAll(".js-open-contact-hub");
-    for (var j = 0; j < openHubBtns.length; j++) {
-      openHubBtns[j].addEventListener("click", function () {
-        openContactHub(null);
+    var orderTriggers = document.querySelectorAll(".js-open-order-modal");
+    for (var j = 0; j < orderTriggers.length; j++) {
+      orderTriggers[j].addEventListener("click", function () {
+        openOrderModal(null);
       });
     }
 
-    // Contact Hub Modal buttons
-    var hubCopyDiscordBtn = document.getElementById("hub-copy-discord-btn");
-    if (hubCopyDiscordBtn) {
-      hubCopyDiscordBtn.addEventListener("click", function () {
-        var handle = (state.profile && state.profile.discordUsername) || "binayak.design";
-        copyToClipboard(handle, "🎮 Discord username '" + handle + "' copied! Add friend on Discord.");
+    var modalCopyIdBtn = document.getElementById("modal-copy-discord-id-btn");
+    if (modalCopyIdBtn) {
+      modalCopyIdBtn.addEventListener("click", function () {
+        var id = (state.profile && state.profile.discordUsername) || "binayak.design";
+        copyText(id, "🎮 Discord ID '" + id + "' copied!");
       });
     }
 
-    var hubCopyBriefDiscordBtn = document.getElementById("hub-copy-brief-discord-btn");
-    if (hubCopyBriefDiscordBtn) {
-      hubCopyBriefDiscordBtn.addEventListener("click", function () {
-        var brief = document.getElementById("contact-brief-textarea").value;
-        copyToClipboard(brief, "📋 Order brief copied! Paste it in Discord DM.");
-        if (state.profile && state.profile.discordInviteUrl) {
-          window.open(state.profile.discordInviteUrl, "_blank", "noopener");
-        }
+    var modalCopyDiscordBriefBtn = document.getElementById("modal-discord-brief-btn");
+    if (modalCopyDiscordBriefBtn) {
+      modalCopyDiscordBriefBtn.addEventListener("click", function () {
+        var msg = document.getElementById("order-brief-box").value;
+        copyText(msg, "📋 Brief copied! Paste it into Discord.");
+        var url = (state.profile && state.profile.discordUrl) || "https://discord.com";
+        window.open(url, "_blank", "noopener");
       });
     }
 
-    var hubCopyIgBtn = document.getElementById("hub-copy-ig-btn");
-    if (hubCopyIgBtn) {
-      hubCopyIgBtn.addEventListener("click", function () {
-        var brief = document.getElementById("contact-brief-textarea").value;
-        copyToClipboard(brief, "📸 Order brief copied! Opening Instagram...");
-        var igUrl = (state.profile && state.profile.instagramUrl) || "https://instagram.com";
-        window.open(igUrl, "_blank", "noopener");
+    var modalCopyInstaBriefBtn = document.getElementById("modal-insta-brief-btn");
+    if (modalCopyInstaBriefBtn) {
+      modalCopyInstaBriefBtn.addEventListener("click", function () {
+        var msg = document.getElementById("order-brief-box").value;
+        copyText(msg, "📸 Brief copied! Opening Instagram...");
+        var url = (state.profile && state.profile.instagramUrl) || "https://instagram.com";
+        window.open(url, "_blank", "noopener");
       });
     }
 
-    // View mode buttons
-    var gridBtn = document.getElementById("mode-detailed-btn");
-    var ytBtn = document.getElementById("mode-yt-btn");
-    if (gridBtn && ytBtn) {
-      gridBtn.addEventListener("click", function () {
-        isYouTubeFeedMode = false;
-        gridBtn.classList.add("active");
-        ytBtn.classList.remove("active");
+    var btnGrid = document.getElementById("switch-grid-btn");
+    var btnSim = document.getElementById("switch-sim-btn");
+    if (btnGrid && btnSim) {
+      btnGrid.addEventListener("click", function () {
+        ytFeedView = false;
+        btnGrid.classList.add("active");
+        btnSim.classList.remove("active");
         renderPortfolio();
       });
-      ytBtn.addEventListener("click", function () {
-        isYouTubeFeedMode = true;
-        ytBtn.classList.add("active");
-        gridBtn.classList.remove("active");
+      btnSim.addEventListener("click", function () {
+        ytFeedView = true;
+        btnSim.classList.add("active");
+        btnGrid.classList.remove("active");
         renderPortfolio();
       });
     }
 
-    // Admin Studio open/close & tabs
-    var adminFab = document.getElementById("admin-studio-fab");
-    var adminModal = document.getElementById("admin-studio-modal");
-    var closeAdminBtn = document.getElementById("close-admin-modal");
-    if (adminFab && adminModal) {
-      adminFab.addEventListener("click", function () {
-        renderAdminStudioBody();
-        adminModal.classList.add("open");
+    var adminBtn = document.getElementById("open-admin-btn");
+    var adminModal = document.getElementById("admin-modal");
+    var closeAdminBtn = document.getElementById("close-admin-modal-btn");
+    if (adminBtn && adminModal) {
+      adminBtn.addEventListener("click", function () {
+        renderAdminPanel();
+        adminModal.classList.add("active");
       });
     }
     if (closeAdminBtn && adminModal) {
       closeAdminBtn.addEventListener("click", function () {
-        adminModal.classList.remove("open");
+        adminModal.classList.remove("active");
       });
     }
 
-    var tabBtns = document.querySelectorAll(".admin-tab-btn");
-    for (var t = 0; t < tabBtns.length; t++) {
-      tabBtns[t].addEventListener("click", function () {
-        for (var k = 0; k < tabBtns.length; k++) tabBtns[k].classList.remove("active");
+    var adminTabs = document.querySelectorAll(".admin-tab");
+    for (var t = 0; t < adminTabs.length; t++) {
+      adminTabs[t].addEventListener("click", function () {
+        for (var k = 0; k < adminTabs.length; k++) adminTabs[k].classList.remove("active");
         this.classList.add("active");
-        currentAdminTab = this.getAttribute("data-tab");
-        renderAdminStudioBody();
+        activeAdminTab = this.getAttribute("data-admin-tab");
+        renderAdminPanel();
       });
     }
 
-    // Export updated config.js
-    var exportBtn = document.getElementById("admin-export-config-btn");
-    if (exportBtn) {
-      exportBtn.addEventListener("click", function () {
-        var content =
+    var dlBtn = document.getElementById("download-config-btn");
+    if (dlBtn) {
+      dlBtn.addEventListener("click", function () {
+        var code =
           "// ============================================================================\n" +
-          "// BINAYAK.DESIGN — CENTRAL CONFIGURATION FILE (config.js)\n" +
-          "// Exported from Owner Visual Admin Studio\n" +
+          "// BINAYAK.CRAFT — CENTRAL DATA & CONFIGURATION FILE (config.js v5)\n" +
+          "// Exported via Owner Crafting Table (Admin Studio)\n" +
           "// ============================================================================\n\n" +
           "window.PORTFOLIO_CONFIG = " + JSON.stringify(state, null, 2) + ";\n";
-        var blob = new Blob([content], { type: "application/javascript;charset=utf-8" });
+        var blob = new Blob([code], { type: "application/javascript;charset=utf-8" });
         var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = "config.js";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = "config.js";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         URL.revokeObjectURL(url);
         showToast("💾 Downloaded updated config.js!");
       });
     }
 
-    // Reset preview button
-    var resetBtn = document.getElementById("admin-reset-btn");
-    if (resetBtn) {
-      resetBtn.addEventListener("click", function () {
+    var rstBtn = document.getElementById("reset-config-btn");
+    if (rstBtn) {
+      rstBtn.addEventListener("click", function () {
         localStorage.removeItem(STORAGE_KEY);
-        state = getDefaultConfig();
-        applyThemeColors();
-        renderProfileAndHero();
+        state = getBaseConfig();
+        applyTheme();
+        renderHeroAndProfile();
         renderStats();
         renderCategories();
         renderPortfolio();
         renderPlans();
         renderReviews();
-        renderAdminStudioBody();
+        renderAdminPanel();
         showToast("🔄 Reset to default config.js!");
       });
     }
 
-    // Close modals when clicking backdrop or close buttons
-    var closeLb = document.getElementById("close-lightbox-modal");
-    var lbModal = document.getElementById("lightbox-modal");
-    if (closeLb && lbModal) {
-      closeLb.addEventListener("click", function () { lbModal.classList.remove("open"); });
+    var closeOrder = document.getElementById("close-order-modal-btn");
+    var orderModal = document.getElementById("order-modal");
+    if (closeOrder && orderModal) {
+      closeOrder.addEventListener("click", function () { orderModal.classList.remove("active"); });
     }
 
-    var closeCh = document.getElementById("close-contact-hub-modal");
-    var chModal = document.getElementById("contact-hub-modal");
-    if (closeCh && chModal) {
-      closeCh.addEventListener("click", function () { chModal.classList.remove("open"); });
+    var closeInspect = document.getElementById("close-inspect-modal-btn");
+    var inspectModal = document.getElementById("inspect-modal");
+    if (closeInspect && inspectModal) {
+      closeInspect.addEventListener("click", function () { inspectModal.classList.remove("active"); });
     }
 
-    var allBackdrops = document.querySelectorAll(".modal-backdrop");
-    for (var b = 0; b < allBackdrops.length; b++) {
-      allBackdrops[b].addEventListener("click", function (e) {
-        if (e.target === this) this.classList.remove("open");
+    var overlays = document.querySelectorAll(".modal-overlay");
+    for (var o = 0; o < overlays.length; o++) {
+      overlays[o].addEventListener("click", function (ev) {
+        if (ev.target === this) this.classList.remove("active");
       });
     }
   });
