@@ -27,10 +27,10 @@
         <li><a href="#reviews">Client Reviews</a></li>
       </ul>
       <div class="nav-actions">
-        <button onclick="window.copyDiscordAndAlert()" class="btn btn-discord btn-sm" title="Click to Copy Discord ID">
+        <button type="button" class="btn btn-discord btn-sm js-copy-discord" title="Click to Copy Discord ID">
           🎮 Discord
         </button>
-        <a id="nav-insta-btn" href="https://instagram.com/" target="_blank" rel="noopener" class="btn btn-instagram btn-sm">
+        <a id="nav-insta-btn" href="https://instagram.com" target="_blank" rel="noopener" class="btn btn-instagram btn-sm">
           📸 Instagram
         </a>
       </div>
@@ -43,36 +43,36 @@
       <div>
         <div class="availability-pill">
           <span class="pulse-dot"></span>
-          <span id="hero-availability">Available for Commissions & Retainers</span>
+          <span id="hero-availability">Available for Commissions & Monthly Retainers</span>
         </div>
         <h1 id="hero-title" class="hero-title">
           Turning Impressions Into <span class="gradient-text">Unstoppable Clicks</span>
         </h1>
         <p id="hero-subtitle" class="hero-subtitle">
-          Psychology-driven thumbnail compositions, dramatic lighting, and high-retention visual storytelling engineered for top creators.
+          Psychology-driven YouTube thumbnail compositions, dramatic lighting, and high-retention visual storytelling engineered for top creators.
         </p>
         <div class="hero-cta-group">
           <a href="#portfolio" class="btn btn-primary">Explore Viral Work ↓</a>
-          <button onclick="window.copyDiscordAndAlert()" class="btn btn-discord">
+          <button type="button" class="btn btn-discord js-copy-discord">
             <span id="hero-discord-label">🎮 Discord: binayak.design</span>
           </button>
-          <a id="hero-insta-btn" href="https://instagram.com/" target="_blank" rel="noopener" class="btn btn-instagram">
+          <a id="hero-insta-btn" href="https://instagram.com" target="_blank" rel="noopener" class="btn btn-instagram">
             📸 Instagram (@binayak.design)
           </a>
         </div>
       </div>
 
-      <!-- Featured Live Card -->
+      <!-- Featured Showcase Card -->
       <div class="hero-showcase-card">
         <div class="showcase-thumb-wrapper">
-          <img id="hero-showcase-img" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1280&q=85" alt="Featured Viral Thumbnail" />
+          <img id="hero-showcase-img" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=85" alt="Featured Viral Thumbnail" />
           <div id="hero-showcase-ctr" class="ctr-floating-badge">🔥 16.4% CTR</div>
           <span class="yt-duration-badge">14:28</span>
         </div>
         <div class="showcase-meta">
           <div>
-            <div id="hero-showcase-title" style="font-weight:800; font-size:1.02rem;">The Dark Truth of Ancient Empires</div>
-            <div id="hero-showcase-meta" style="font-size:0.84rem; color:var(--text-secondary);">Mythos Chronicles • 4.2M Views</div>
+            <div id="hero-showcase-title" style="font-weight:800;font-size:1rem;">The Dark Truth of Ancient Empires</div>
+            <div id="hero-showcase-meta" style="font-size:0.82rem;color:var(--text-sub);">Mythos Chronicles • 4.2M Views</div>
           </div>
           <span class="verified-badge">Featured Case Study</span>
         </div>
@@ -83,9 +83,7 @@
   <!-- Live CTR & Views Generated Stats -->
   <section id="stats" class="stats-section">
     <div class="container">
-      <div id="stats-grid" class="stats-grid">
-        <!-- Rendered dynamically from config.js -->
-      </div>
+      <div id="stats-grid" class="stats-grid"></div>
     </div>
   </section>
 
@@ -95,43 +93,38 @@
       <div class="section-header">
         <span class="section-badge">● Proven Performance Gallery</span>
         <h2 class="section-title">Engineered to Dominate <span class="gradient-text">Browse & Suggested</span></h2>
-        <p class="section-subtitle">Filter by niche or switch to "YouTube Feed Mode" to see how every thumbnail pops at real browse-feed scale.</p>
+        <p class="section-subtitle">Filter by niche or switch to "YouTube Feed View" to inspect how every thumbnail pops at real browse-feed scale.</p>
       </div>
 
       <div class="portfolio-toolbar">
-        <div id="category-pills" class="category-pills">
-          <!-- Categories injected by app.js -->
-        </div>
+        <div id="category-pills" class="category-pills"></div>
         <div class="view-mode-toggle">
-          <button id="mode-detailed-btn" class="mode-btn active">Case Study Grid</button>
-          <button id="mode-yt-btn" class="mode-btn">▶ YouTube Feed View</button>
+          <button type="button" id="mode-detailed-btn" class="mode-btn active">Case Study Grid</button>
+          <button type="button" id="mode-yt-btn" class="mode-btn">▶ YouTube Feed View</button>
         </div>
       </div>
 
-      <div id="portfolio-grid" class="portfolio-grid">
-        <!-- Portfolio cards injected by app.js -->
-      </div>
+      <div id="portfolio-grid" class="portfolio-grid"></div>
     </div>
   </section>
 
-  <!-- Interactive Before/After Raw-to-Render Lab & CTR Calculator -->
+  <!-- Interactive Before/After Slider & CTR Calculator -->
   <section id="lab" class="interactive-lab-section">
     <div class="container">
       <div class="section-header">
         <span class="section-badge">● Interactive CTR Lab</span>
         <h2 class="section-title">See the <span class="gradient-text">Visual & Financial Lift</span></h2>
-        <p class="section-subtitle">Drag the slider to compare raw assets vs. final color-graded composition, and calculate what extra CTR means for your channel.</p>
+        <p class="section-subtitle">Drag the slider to compare raw screenshots vs. final color-graded thumbnails, and calculate what extra CTR means for your channel.</p>
       </div>
 
       <div class="lab-grid">
-        <!-- Before/After Slider -->
         <div class="lab-card">
-          <h3 style="font-family:var(--font-display); font-size:1.3rem; margin-bottom:6px;">Raw Concept vs. Final Render</h3>
-          <p style="font-size:0.88rem; color:var(--text-secondary);">Drag horizontally to inspect rim lighting, depth separation, and color grading.</p>
+          <h3 style="font-family:var(--font-heading);font-size:1.25rem;margin-bottom:4px;">Raw Concept vs. Final Render</h3>
+          <p style="font-size:0.86rem;color:var(--text-sub);">Drag horizontally to inspect rim lighting, depth separation, and color grading.</p>
           <div class="ba-slider-container">
-            <img class="ba-image-after" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1280&q=85" alt="After Final Thumbnail" />
+            <img class="ba-image-after" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=85" alt="After Final Thumbnail" />
             <div id="ba-before-clip" class="ba-before-clip">
-              <img class="ba-image-before" src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1280&q=40" style="filter: grayscale(65%) brightness(0.7);" alt="Before Raw Footage" />
+              <img class="ba-image-before" src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=40" style="filter:grayscale(65%) brightness(0.7);" alt="Before Raw Screenshot" />
             </div>
             <span class="ba-label ba-label-before">Raw Screenshot (4.3% CTR)</span>
             <span class="ba-label ba-label-after">Final Grade (15.1% CTR)</span>
@@ -139,10 +132,9 @@
           </div>
         </div>
 
-        <!-- CTR & Views ROI Simulator -->
         <div class="lab-card">
-          <h3 style="font-family:var(--font-display); font-size:1.3rem; margin-bottom:6px;">Channel CTR & Revenue Estimator</h3>
-          <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:20px;">Test how a higher Click-Through Rate multiplies views on the exact same impressions.</p>
+          <h3 style="font-family:var(--font-heading);font-size:1.25rem;margin-bottom:4px;">Channel CTR & Revenue Estimator</h3>
+          <p style="font-size:0.86rem;color:var(--text-sub);margin-bottom:18px;">Test how a higher Click-Through Rate multiplies views on the exact same impressions.</p>
 
           <div class="calc-row">
             <div class="calc-label-row">
@@ -170,11 +162,11 @@
 
           <div class="calc-result-box">
             <div>
-              <div style="font-size:0.78rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Extra Views Gained</div>
+              <div style="font-size:0.76rem;color:var(--text-sub);text-transform:uppercase;font-weight:700;">Extra Views Gained</div>
               <div id="calc-extra-views" class="calc-metric-val">+85,000</div>
             </div>
             <div>
-              <div style="font-size:0.78rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Est. Sponsor/Ad Lift</div>
+              <div style="font-size:0.76rem;color:var(--text-sub);text-transform:uppercase;font-weight:700;">Est. Sponsor/Ad Lift</div>
               <div id="calc-extra-rev" class="calc-metric-val">₹10,200</div>
             </div>
           </div>
@@ -189,12 +181,10 @@
       <div class="section-header">
         <span class="section-badge">● Transparent Creator Pricing (INR)</span>
         <h2 class="section-title">Thumbnail Designing <span class="gradient-text">Plans in ₹ INR</span></h2>
-        <p class="section-subtitle">Click any package below to copy an instant order brief and connect with me directly on Discord or Instagram DM.</p>
+        <p class="section-subtitle">Click any package below to generate a pre-filled project brief and connect directly via Discord or Instagram DM.</p>
       </div>
 
-      <div id="pricing-grid" class="pricing-grid">
-        <!-- Injected dynamically from config.js -->
-      </div>
+      <div id="pricing-grid" class="pricing-grid"></div>
     </div>
   </section>
 
@@ -204,115 +194,94 @@
       <div class="reviews-top-bar">
         <div>
           <span class="section-badge">● Creator Testimonials & Community Wall</span>
-          <h2 class="section-title" style="margin-bottom:6px;">Trusted by <span class="gradient-text">High-Growth Creators</span></h2>
-          <p id="reviews-count-text" style="color:var(--text-secondary); font-size:0.95rem;">Loading verified reviews...</p>
+          <h2 class="section-title" style="margin-bottom:4px;">Trusted by <span class="gradient-text">High-Growth Creators</span></h2>
+          <p id="reviews-count-text" style="color:var(--text-sub);font-size:0.92rem;">Loading reviews...</p>
         </div>
-        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
           <div class="reviews-summary-pill">
             <span class="stars-gold">★★★★★</span>
-            <span style="font-weight:800;">5.0 / 5.0 Rating</span>
+            <span style="font-weight:800;">5.0 / 5.0</span>
           </div>
-          <button id="open-public-review-btn" class="btn btn-primary">
+          <button type="button" id="open-public-review-btn" class="btn btn-primary">
             ✍️ Post a Review
           </button>
         </div>
       </div>
 
-      <div id="reviews-grid" class="reviews-grid">
-        <!-- Reviews injected dynamically from config.js -->
-      </div>
+      <div id="reviews-grid" class="reviews-grid"></div>
     </div>
   </section>
 
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p id="footer-brand" style="font-weight:800; color:var(--text-primary); font-size:1.05rem; margin-bottom:6px;">
+      <p id="footer-brand" style="font-weight:800;color:var(--text-main);font-size:1rem;margin-bottom:6px;">
         BINAYAK.DESIGN — Binayak Tripathy
       </p>
-      <p style="margin-bottom:16px;">High-CTR YouTube Thumbnails, Visual Direction & Graphic Design.</p>
-      <div style="display:flex; justify-content:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
-        <button onclick="window.copyDiscordAndAlert()" class="btn btn-discord btn-sm">🎮 Copy Discord ID</button>
-        <button onclick="window.openContactHub()" class="btn btn-instagram btn-sm">📸 DM on Instagram</button>
+      <p style="margin-bottom:14px;">High-CTR YouTube Thumbnails, Visual Direction & Graphic Design.</p>
+      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+        <button type="button" class="btn btn-discord btn-sm js-copy-discord">🎮 Copy Discord ID</button>
+        <button type="button" class="btn btn-instagram btn-sm js-open-contact-hub">📸 DM on Instagram</button>
       </div>
-      <p style="font-size:0.8rem; color:var(--text-muted);">
-        💡 Owner Tip: Click the <strong>"⚙️ Customize / Admin Studio"</strong> button in the bottom-left (or press <strong>Shift + A</strong>) to edit your Discord, Instagram, thumbnails, verified reviews, or INR plans anytime!
+      <p style="font-size:0.78rem;color:var(--text-muted);">
+        💡 Owner Tip: Click <strong>"⚙️ Customize / Admin Studio"</strong> in the bottom-left corner (PIN: <strong>2026</strong>) to add thumbnails, verify reviews, or edit INR plans!
       </p>
     </div>
   </footer>
 
-  <!-- Live Toast Notification -->
+  <!-- Toast Notification -->
   <div id="live-toast" class="toast-notification">Copied to clipboard!</div>
 
-  <!-- Floating Owner Admin Studio Button -->
-  <button id="admin-studio-fab" class="admin-fab" title="Open Owner Visual Customizer & Content Manager (Shift + A)">
+  <!-- Floating Admin Studio Button -->
+  <button type="button" id="admin-studio-fab" class="admin-fab">
     ⚙️ Customize / Admin Studio
   </button>
 
-  <!-- 0. DISCORD & INSTAGRAM ORDER / CONTACT HUB MODAL -->
+  <!-- 1. DISCORD & INSTAGRAM ORDER HUB MODAL -->
   <div id="contact-hub-modal" class="modal-backdrop">
     <div class="modal-window">
-      <button id="close-contact-hub-modal" class="modal-close">✕</button>
-      <span class="section-badge" style="margin-bottom:8px;">● Direct Creator Commission</span>
-      <h3 style="font-family:var(--font-display); font-size:1.55rem; margin-bottom:6px;">Order via Discord or Instagram</h3>
-      <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:18px;">
-        Customize your order message below, then click <strong>Discord</strong> or <strong>Instagram</strong> to copy your message and connect instantly!
+      <button type="button" id="close-contact-hub-modal" class="modal-close">✕</button>
+      <span class="section-badge" style="margin-bottom:6px;">● Direct Creator Commission</span>
+      <h3 style="font-family:var(--font-heading);font-size:1.45rem;margin-bottom:6px;">Order via Discord or Instagram</h3>
+      <p style="font-size:0.86rem;color:var(--text-sub);margin-bottom:16px;">
+        Edit your project brief below, then click <strong>Discord</strong> or <strong>Instagram</strong> to copy your message and connect!
       </p>
 
       <div class="form-group">
-        <label>Your Pre-Filled Project Brief (Auto-Copied on Click)</label>
+        <label>Your Project Brief (Copied on Click)</label>
         <textarea id="contact-brief-textarea" class="form-control" rows="3"></textarea>
       </div>
 
-      <!-- Discord Option -->
       <div class="contact-card-option">
         <div>
-          <div style="font-weight:800; font-size:1rem; color:#fff; display:flex; align-items:center; gap:8px;">
-            🎮 Discord Direct Message
-          </div>
-          <div style="font-size:0.85rem; color:var(--text-secondary);">
-            Username: <strong id="hub-discord-handle" style="color:#5865F2;">binayak.design</strong>
-          </div>
+          <div style="font-weight:800;font-size:0.95rem;">🎮 Discord Direct Message</div>
+          <div style="font-size:0.82rem;color:var(--text-sub);">Username: <strong id="hub-discord-handle" style="color:#5865F2;">binayak.design</strong></div>
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button onclick="window.copyBriefAndDiscord()" class="btn btn-discord btn-sm">
-            Copy ID & Brief
-          </button>
-          <a id="hub-discord-open-btn" href="#" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-            Open Discord ↗
-          </a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" id="hub-copy-discord-btn" class="btn btn-secondary btn-sm">Copy Discord ID</button>
+          <button type="button" id="hub-copy-brief-discord-btn" class="btn btn-discord btn-sm">Copy Brief & Open Discord ↗</button>
         </div>
       </div>
 
-      <!-- Instagram Option -->
       <div class="contact-card-option">
         <div>
-          <div style="font-weight:800; font-size:1rem; color:#fff; display:flex; align-items:center; gap:8px;">
-            📸 Instagram Direct Message
-          </div>
-          <div style="font-size:0.85rem; color:var(--text-secondary);">
-            Handle: <strong id="hub-insta-handle" style="color:#ff3366;">@binayak.design</strong>
-          </div>
+          <div style="font-weight:800;font-size:0.95rem;">📸 Instagram Direct Message</div>
+          <div style="font-size:0.82rem;color:var(--text-sub);">Handle: <strong id="hub-insta-handle" style="color:var(--accent-primary);">@binayak.design</strong></div>
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button onclick="window.copyBriefAndOpenInstagram()" class="btn btn-instagram btn-sm">
-            Copy Brief & Open IG ↗
-          </button>
-        </div>
+        <button type="button" id="hub-copy-ig-btn" class="btn btn-instagram btn-sm">Copy Brief & Open Instagram ↗</button>
       </div>
     </div>
   </div>
 
-  <!-- 1. PUBLIC REVIEW SUBMISSION MODAL (For visitors/clients to post a review) -->
+  <!-- 2. PUBLIC REVIEW SUBMISSION MODAL -->
   <div id="public-review-modal" class="modal-backdrop">
     <div class="modal-window">
-      <button id="close-public-review-modal" class="modal-close">✕</button>
-      <h3 style="font-family:var(--font-display); font-size:1.5rem; margin-bottom:6px;">Post Your Experience</h3>
-      <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:20px;">
-        Share your feedback below! Note: Public submissions appear immediately as a <strong>Community Post</strong>. Official <strong>Verified Client ✔</strong> badges are granted by the site owner.
+      <button type="button" id="close-public-review-modal" class="modal-close">✕</button>
+      <h3 style="font-family:var(--font-heading);font-size:1.4rem;margin-bottom:6px;">Post Your Review</h3>
+      <p style="font-size:0.85rem;color:var(--text-sub);margin-bottom:16px;">
+        Public submissions appear immediately as a <strong>Community Post</strong>. Official <strong>✔ Verified Client</strong> badges are granted by the site owner.
       </p>
 
-      <!-- Netlify-ready form attributes included automatically -->
       <form id="public-review-form" name="portfolio-client-reviews" method="POST" data-netlify="true">
         <input type="hidden" name="form-name" value="portfolio-client-reviews" />
         <div class="form-row-2">
@@ -321,14 +290,14 @@
             <input type="text" id="pub-rev-name" name="reviewer_name" class="form-control" placeholder="e.g. Rohan Verma" required />
           </div>
           <div class="form-group">
-            <label>Channel Niche / Subscriber Count</label>
+            <label>Channel Niche / Subs</label>
             <input type="text" id="pub-rev-role" name="reviewer_role" class="form-control" placeholder="e.g. Tech Creator (120K Subs)" />
           </div>
         </div>
 
         <div class="form-row-2">
           <div class="form-group">
-            <label>Upload Your Profile Photo (Optional)</label>
+            <label>Upload Your Photo (Optional)</label>
             <input type="file" id="pub-rev-photo-file" accept="image/*" class="form-control" />
           </div>
           <div class="form-group">
@@ -339,7 +308,7 @@
 
         <div class="form-row-2">
           <div class="form-group">
-            <label>Rating</label>
+            <label>Star Rating</label>
             <select id="pub-rev-rating" name="rating" class="form-control">
               <option value="5" selected>★★★★★ (5/5 — Incredible CTR!)</option>
               <option value="4">★★★★☆ (4/5 — Great Work)</option>
@@ -354,53 +323,51 @@
 
         <div class="form-group">
           <label>Your Review *</label>
-          <textarea id="pub-rev-comment" name="review_comment" class="form-control" rows="3" placeholder="How was the thumbnail quality, communication, and CTR boost?" required></textarea>
+          <textarea id="pub-rev-comment" name="review_comment" class="form-control" rows="3" placeholder="How was the thumbnail quality and CTR boost?" required></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width:100%;">Submit Review to Live Wall</button>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Submit Review</button>
       </form>
     </div>
   </div>
 
-  <!-- 2. LIGHTBOX MODAL FOR HD THUMBNAIL INSPECTION -->
+  <!-- 3. HD LIGHTBOX MODAL -->
   <div id="lightbox-modal" class="modal-backdrop">
     <div class="modal-window modal-wide">
-      <button id="close-lightbox-modal" class="modal-close">✕</button>
-      <img id="lightbox-img" src="" alt="Full HD Thumbnail Preview" style="width:100%; border-radius:14px; margin-bottom:18px; border:1px solid var(--border-subtle);" />
-      <h3 id="lightbox-title" style="font-family:var(--font-display); font-size:1.4rem; margin-bottom:6px;"></h3>
-      <div id="lightbox-meta" style="color:var(--accent-emerald); font-weight:700; font-size:0.9rem; margin-bottom:10px;"></div>
-      <p id="lightbox-breakdown" style="color:var(--text-secondary); font-size:0.95rem;"></p>
+      <button type="button" id="close-lightbox-modal" class="modal-close">✕</button>
+      <img id="lightbox-img" src="" alt="Full HD Thumbnail Preview" style="width:100%;border-radius:12px;margin-bottom:14px;border:1px solid var(--border-light);" />
+      <h3 id="lightbox-title" style="font-family:var(--font-heading);font-size:1.3rem;margin-bottom:4px;"></h3>
+      <div id="lightbox-meta" style="color:var(--accent-emerald);font-weight:700;font-size:0.88rem;margin-bottom:8px;"></div>
+      <p id="lightbox-breakdown" style="color:var(--text-sub);font-size:0.92rem;"></p>
     </div>
   </div>
 
-  <!-- 3. OWNER VISUAL ADMIN STUDIO MODAL (Add work, add verified reviews, edit INR plans, export config.js) -->
+  <!-- 4. OWNER VISUAL ADMIN STUDIO MODAL -->
   <div id="admin-studio-modal" class="modal-backdrop">
     <div class="modal-window modal-wide">
-      <button id="close-admin-modal" class="modal-close">✕</button>
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px; padding-right:40px;">
+      <button type="button" id="close-admin-modal" class="modal-close">✕</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;padding-right:36px;">
         <div>
-          <h3 style="font-family:var(--font-display); font-size:1.5rem;">🎨 Owner Visual Admin Studio</h3>
-          <p style="font-size:0.84rem; color:var(--text-secondary);">
-            Add new thumbnails, publish Verified Client reviews, edit INR pricing, or update your Discord & Instagram. Click <strong>"💾 Download Updated config.js"</strong> anytime to permanently save changes for Netlify!
+          <h3 style="font-family:var(--font-heading);font-size:1.4rem;">🎨 Owner Visual Admin Studio</h3>
+          <p style="font-size:0.82rem;color:var(--text-sub);">
+            Add thumbnails, verify reviews, or edit INR pricing. Click <strong>"💾 Download config.js"</strong> to permanently save changes for Netlify!
           </p>
         </div>
-        <div style="display:flex; gap:10px;">
-          <button id="admin-export-config-btn" class="btn btn-primary btn-sm">💾 Download Updated config.js</button>
-          <button id="admin-reset-btn" class="btn btn-secondary btn-sm">Reset Preview</button>
+        <div style="display:flex;gap:8px;">
+          <button type="button" id="admin-export-config-btn" class="btn btn-primary btn-sm">💾 Download config.js</button>
+          <button type="button" id="admin-reset-btn" class="btn btn-secondary btn-sm">Reset Preview</button>
         </div>
       </div>
 
-      <div class="admin-tabs">
-        <button class="admin-tab-btn active" data-tab="portfolio">🖼 Portfolio Works</button>
-        <button class="admin-tab-btn" data-tab="reviews">⭐ Reviews & Verified Badges</button>
-        <button class="admin-tab-btn" data-tab="stats">📈 CTR & Views Stats</button>
-        <button class="admin-tab-btn" data-tab="plans">₹ INR Pricing Plans</button>
-        <button class="admin-tab-btn" data-tab="brand">🎨 Discord, IG & Brand</button>
+      <div id="admin-tabs-bar" class="admin-tabs">
+        <button type="button" class="admin-tab-btn active" data-tab="portfolio">🖼 Portfolio Works</button>
+        <button type="button" class="admin-tab-btn" data-tab="reviews">⭐ Reviews & Verified Badges</button>
+        <button type="button" class="admin-tab-btn" data-tab="stats">📈 CTR & Views Stats</button>
+        <button type="button" class="admin-tab-btn" data-tab="plans">₹ INR Pricing Plans</button>
+        <button type="button" class="admin-tab-btn" data-tab="brand">🎨 Discord, IG & Brand</button>
       </div>
 
-      <div id="admin-tab-body">
-        <!-- Rendered dynamically by app.js -->
-      </div>
+      <div id="admin-tab-body"></div>
     </div>
   </div>
 
