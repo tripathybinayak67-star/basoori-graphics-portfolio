@@ -52,3 +52,12 @@ PART B: HOW TO OPEN THE SECRET VISUAL ADMIN STUDIO
 - URL Hash Trigger: Navigate to `https://your-site.netlify.app/#admin-studio`
 - Footer Trigger: Triple-click the small obsidian cube in the bottom-left footer.
 - Default Password: basoori2026
+
+
+VITE_SUPABASE_URL=https://qgvrizxyxtkkjkkdocnp.supabase.co/rest/v1/
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFndnJpenh5eHRra2pra2RvY25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MzY0OTIsImV4cCI6MjEwOTExMjQ5Mn0.KFc1kyjIM_S5mnHOqiyYAwgxkWTyWnjzm2vh1eftvxs
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFndnJpenh5eHRra2pra2RvY25wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzUzNjQ5MiwiZXhwIjoyMTA5MTEyNDkyfQ.v1AzFHw9JageYMHRY5BpKCx1-cbwG9pocSpfQRjL-bk
+
+ADMIN_STUDIO_PASSWORD=Androgamer1@
+JWT_SECRET=bdjairiajgkoeiqwjdnioperiopijimk
+YOUTUBE_API_KEY=AIzaSyDiQbr5wGYlFyKJGU_hOusMQ71sjPgDveU

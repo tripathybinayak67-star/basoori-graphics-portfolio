@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { SiteData, ReviewItem } from '../types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const RAW_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+// Accept either the Supabase project URL or its REST endpoint, then normalize it.
+const SUPABASE_URL = RAW_SUPABASE_URL.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const STORAGE_KEY = 'basoori_graphics_v3_state';
 const SESSION_TOKEN_KEY = 'basoori_admin_jwt';
@@ -58,7 +60,7 @@ export async function fetchYouTubeChannelLogo(channelInput: string): Promise<{
 
   try {
     const res = await fetch(
-      `/.netlify/functions/api?action=youtube-channel&query=${encodeURIComponent(clean)}`
+      `/api?action=youtube-channel&query=${encodeURIComponent(clean)}`
     );
     if (res.ok) {
       const data = await res.json();
@@ -87,7 +89,7 @@ export async function fetchYouTubeChannelLogo(channelInput: string): Promise<{
     title: seed,
     avatarUrl: `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(seed)}&backgroundColor=10b981,a855f7`,
     message:
-      'Generated deterministic channel avatar fallback (Set YOUTUBE_API_KEY in Netlify for live YouTube API v3 lookup).'
+      'Generated deterministic channel avatar fallback (Set YOUTUBE_API_KEY in Cloudflare Pages for live YouTube API v3 lookup).'
   };
 }
 
@@ -96,7 +98,7 @@ export async function loginAdminStudio(password: string): Promise<{
   error?: string;
 }> {
   try {
-    const res = await fetch('/.netlify/functions/api?action=login', {
+    const res = await fetch('/api?action=login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password })
@@ -111,15 +113,9 @@ export async function loginAdminStudio(password: string): Promise<{
       return { authenticated: false, error: 'Invalid Admin Password.' };
     }
   } catch {
-    // Local dev fallback
+    return { authenticated: false, error: 'Admin authentication service is unavailable. Please try again later.' };
   }
-
-  const expected = localStorage.getItem('basoori_admin_pass_override') || 'basoori2026';
-  if (password === expected) {
-    sessionStorage.setItem(SESSION_TOKEN_KEY, `local_dev_jwt_${Date.now()}`);
-    return { authenticated: true };
-  }
-  return { authenticated: false, error: 'Incorrect password (default: basoori2026)' };
+  return { authenticated: false, error: 'Unable to authenticate. Check your password and try again.' };
 }
 
 export function logoutAdminStudio(): void {
@@ -163,63 +159,35 @@ export async function loadSiteData(fallback: SiteData): Promise<SiteData> {
 export async function saveSiteData(state: SiteData): Promise<void> {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   const token = sessionStorage.getItem(SESSION_TOKEN_KEY);
+  if (!token) throw new Error('Admin session expired. Please sign in again.');
 
-  try {
-    await fetch('/.netlify/functions/api?action=save-state', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({ state })
-    });
-  } catch {
-    // Fallback direct Supabase upsert if configured
-  }
-
-  if (supabase) {
-    try {
-      await supabase
-        .from('basoori_site_state')
-        .upsert({ id: 'primary', payload: state, updated_at: new Date().toISOString() });
-    } catch {
-      // Ignore
-    }
+  const res = await fetch('/api?action=save-state', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ state })
+  });
+  if (!res.ok) {
+    const result = await res.json().catch(() => ({}));
+    throw new Error(result.error || 'Could not save changes to Supabase.');
   }
 }
 
 export async function submitPublicCommunityReview(
   input: Pick<ReviewItem, 'name' | 'role' | 'avatarUrl' | 'channelUrl' | 'rating' | 'comment'>
 ): Promise<ReviewItem> {
-  const newReview: ReviewItem = {
-    ...input,
-    id: `rev_${Date.now()}`,
-    verified: false, // Public reviews NEVER get verified badge automatically
-    featured: false,
-    hidden: false,
-    source: 'community',
-    createdAt: new Date().toISOString().split('T')[0]
-  };
-
-  try {
-    const form = new URLSearchParams();
-    form.append('form-name', 'basoori-community-reviews');
-    form.append('name', newReview.name);
-    form.append('role', newReview.role);
-    form.append('channelUrl', newReview.channelUrl || '');
-    form.append('rating', String(newReview.rating));
-    form.append('comment', newReview.comment);
-
-    await fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: form.toString()
-    });
-  } catch {
-    // Ignore when running outside Netlify
+  const res = await fetch('/api?action=submit-review', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input)
+  });
+  const result = await res.json().catch(() => ({}));
+  if (!res.ok || !result.review) {
+    throw new Error(result.error || 'Your review could not be submitted. Please try again.');
   }
-
-  return newReview;
+  return result.review as ReviewItem;
 }
 
 export function readImageFileAsDataUrl(file: File): Promise<string> {

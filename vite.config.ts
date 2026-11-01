@@ -6,15 +6,7 @@ export default defineConfig({
   resolve: {
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
-  server: {
-    port: 5173,
-    proxy: {
-      '/.netlify/functions': {
-        target: 'http://localhost:8888',
-        changeOrigin: true
-      }
-    }
-  },
+  server: { port: 5173 },
   build: {
     outDir: 'dist',
     sourcemap: false

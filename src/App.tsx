@@ -120,8 +120,12 @@ export default function App() {
   const commitData = async (next: SiteData, msg = 'Changes saved to persistent database.') => {
     setData(next);
     document.title = next.siteTitle || next.brandName;
-    await saveSiteData(next);
-    showToast(msg);
+    try {
+      await saveSiteData(next);
+      showToast(msg);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Cloud save failed. Your changes remain in this browser.');
+    }
   };
 
   const detectedYtId = useMemo(() => extractYouTubeVideoId(pInputUrl), [pInputUrl]);
@@ -162,25 +166,30 @@ export default function App() {
       showToast('Please fill in your name and written feedback.');
       return;
     }
-    const created = await submitPublicCommunityReview({
-      name: cleanName,
-      role: pubRole.replace(/[<>]/g, '').trim() || 'Community Creator',
-      avatarUrl:
-        pubAvatar.trim() ||
-        `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(cleanName)}`,
-      channelUrl: pubYt.trim(),
-      rating: pubRating,
-      comment: cleanComment
-    });
-    const next = { ...data, reviews: [created, ...data.reviews] };
-    await commitData(next, 'Submitted! Published as an Unverified Community Post.');
-    setLastReviewTime(Date.now());
-    setReviewModalOpen(false);
-    setPubName('');
-    setPubRole('');
-    setPubYt('');
-    setPubAvatar('');
-    setPubComment('');
+    try {
+      const created = await submitPublicCommunityReview({
+        name: cleanName,
+        role: pubRole.replace(/[<>]/g, '').trim() || 'Community Creator',
+        avatarUrl:
+          pubAvatar.trim() ||
+          `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(cleanName)}`,
+        channelUrl: pubYt.trim(),
+        rating: pubRating,
+        comment: cleanComment
+      });
+      const next = { ...data, reviews: [created, ...data.reviews] };
+      setData(next);
+      showToast('Submitted! Published as an Unverified Community Post.');
+      setLastReviewTime(Date.now());
+      setReviewModalOpen(false);
+      setPubName('');
+      setPubRole('');
+      setPubYt('');
+      setPubAvatar('');
+      setPubComment('');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Review submission failed.');
+    }
   };
 
   return (
