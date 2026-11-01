@@ -19,7 +19,7 @@ window.PORTFOLIO_CONFIG = {
     instagramUrl: "https://instagram.com/@___basuverse",
     primaryColor: "#52a535",
     secondaryColor: "#ffaa00",
-    adminPin: "2026"
+    adminPin: "Androgamer1@"
   },
 
   stats: [
