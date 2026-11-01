@@ -7,16 +7,16 @@
 
 window.PORTFOLIO_CONFIG = {
   profile: {
-    brandName: "BINAYAK.CRAFT",
+    brandName: "BASOORI.GRAPHICS",
     designerName: "Binayak Tripathy",
     roleBadge: "HIGH-CTR THUMBNAIL CRAFTER & VISUAL DIRECTOR",
     availabilityText: "Server Status: ONLINE — Accepting Commissions",
     heroTitle: "Crafting <span class='mc-gold-text'>God-Tier Clicks</span> & Viral Retention.",
-    heroSubtitle: "High-contrast YouTube thumbnail compositions, dramatic rim lighting, and click-psychology engineered to dominate Browse & Suggested feeds.",
-    discordUsername: "binayak.design",
+    heroSubtitle: "High-contrast YouTube thumbnail compositions, dramatic lighting, and click-psychology engineered to dominate Browse & Suggested feeds.",
+    discordUsername: "basuLR",
     discordUrl: "https://discord.com",
     instagramHandle: "@binayak.design",
-    instagramUrl: "https://instagram.com",
+    instagramUrl: "https://instagram.com/@___basuverse",
     primaryColor: "#52a535",
     secondaryColor: "#ffaa00",
     adminPin: "2026"
