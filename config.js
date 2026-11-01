@@ -1,74 +1,61 @@
 // ============================================================================
-// PORTFOLIO DATA & CONFIGURATION FILE (config.js)
-// You can edit this file directly in Notepad/VS Code, OR use the built-in 
-// "Admin Studio" on your website (Click the Gear Icon in the bottom-left 
-// or press Shift + A) to edit everything visually and click "Export config.js"!
+// BINAYAK.DESIGN — CENTRAL CONFIGURATION FILE (config.js)
+// Edit this file directly in Notepad/VS Code, OR use the built-in 
+// "Admin Studio" on your website (Bottom-Left Gear Button) to add/edit 
+// items visually and click "Download config.js" to save permanently!
 // ============================================================================
 
 window.PORTFOLIO_CONFIG = {
   profile: {
-    brandName: "BASOORI GRAPHICS",
+    brandName: "BINAYAK.DESIGN",
     designerName: "Binayak Tripathy",
-    tagline: "High-CTR YouTube Thumbnail Specialist & Visual Director",
+    availabilityText: "Available for Commissions & Monthly Retainers",
     heroTitle: "Turning Impressions Into <span class='gradient-text'>Unstoppable Clicks</span>",
-    heroSubtitle: "Psychology-driven thumbnail compositions, dramatic lighting, and high-retention visual storytelling engineered for top creators.",
-    availabilityText: "Available for Commissions & Retainers",
-    discordUsername: "binayak.design", // Your Discord Username (copied when clients click Discord)
-    discordInviteUrl: "https://discord.com/users/", // Optional: Direct Discord profile or server invite link
-    instagramHandle: "@binayak.design", // Your Instagram handle
-    instagramUrl: "https://instagram.com/binayak.design", // Your full Instagram profile URL
-    primaryContact: "discord", // Choose "discord" or "instagram" for main CTA buttons
-    contactEmail: "contact@binayakdesign.com",
-    youtubeUrl: "https://youtube.com/",
-    accentColor: "#ff3366",
-    secondaryColor: "#7000ff",
-    adminPin: "2026" // Change this PIN to secure your visual Admin Studio
+    heroSubtitle: "Psychology-driven YouTube thumbnail compositions, dramatic lighting, and high-retention visual storytelling engineered for top creators.",
+    discordUsername: "binayak.design",
+    discordInviteUrl: "https://discord.com",
+    instagramHandle: "@binayak.design",
+    instagramUrl: "https://instagram.com",
+    accentColor: "#ff2a5f",
+    secondaryColor: "#7928ca",
+    adminPin: "2026"
   },
 
   stats: [
     {
-      id: "stat-1",
       label: "Total Views Generated",
-      value: 145.8,
-      suffix: "M+",
-      prefix: "",
-      decimals: 1,
+      value: "145.8M+",
       subtext: "Across 350+ viral uploads",
-      icon: "eye"
+      icon: "👁️"
     },
     {
-      id: "stat-2",
       label: "Average CTR Boost",
-      value: 14.6,
-      suffix: "%",
-      prefix: "+",
-      decimals: 1,
+      value: "+14.6%",
       subtext: "Baseline avg jumped from 4.8% to 13.9%",
-      icon: "trending-up"
+      icon: "📈"
     },
     {
-      id: "stat-3",
       label: "Thumbnails Delivered",
-      value: 620,
-      suffix: "+",
-      prefix: "",
-      decimals: 0,
+      value: "620+",
       subtext: "99.4% on-time 24hr turnaround",
-      icon: "layers"
+      icon: "🎨"
     },
     {
-      id: "stat-4",
-      label: "Creator Revenue Impact",
-      value: 3.8,
-      suffix: "Cr+",
-      prefix: "₹",
-      decimals: 1,
+      label: "Creator Revenue Lift",
+      value: "₹3.8Cr+",
       subtext: "Estimated client AdSense & sponsor lift",
-      icon: "award"
+      icon: "🏆"
     }
   ],
 
-  categories: ["All", "Gaming & Esports", "Documentary & Lore", "Tech & Finance", "Vlogs & Challenges", "3D / Manipulation"],
+  categories: [
+    "All",
+    "Gaming & Esports",
+    "Documentary & Lore",
+    "Tech & Finance",
+    "Vlogs & Challenges",
+    "3D & Manipulation"
+  ],
 
   portfolio: [
     {
@@ -79,10 +66,9 @@ window.PORTFOLIO_CONFIG = {
       ctr: "16.4%",
       viewsGenerated: "4.2M Views",
       duration: "14:28",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1280&q=85",
-      beforeImage: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1280&q=60",
+      image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=85",
       featured: true,
-      breakdown: "Applied high-contrast rim lighting, golden ratio focal guides, and desaturated environmental depth to isolate the main subject's emotional expression."
+      breakdown: "High-contrast rim lighting, golden ratio focal guides, and desaturated environmental depth to isolate the subject's emotion."
     },
     {
       id: "work-2",
@@ -92,8 +78,7 @@ window.PORTFOLIO_CONFIG = {
       ctr: "15.1%",
       viewsGenerated: "2.8M Views",
       duration: "22:15",
-      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1280&q=85",
-      beforeImage: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1280&q=60",
+      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=85",
       featured: true,
       breakdown: "Engineered complementary cyan/magenta color grading with aggressive motion blur and a 3-word curiosity hook."
     },
@@ -105,10 +90,9 @@ window.PORTFOLIO_CONFIG = {
       ctr: "13.8%",
       viewsGenerated: "1.9M Views",
       duration: "18:04",
-      image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1280&q=85",
-      beforeImage: "",
+      image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=85",
       featured: false,
-      breakdown: "Minimalist 3-element composition focusing on facial micro-expression and a single glowing chart trajectory."
+      breakdown: "Minimalist 3-element composition focusing on facial micro-expression and a single glowing trajectory."
     },
     {
       id: "work-4",
@@ -118,10 +102,9 @@ window.PORTFOLIO_CONFIG = {
       ctr: "17.2%",
       viewsGenerated: "6.5M Views",
       duration: "19:50",
-      image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1280&q=85",
-      beforeImage: "",
+      image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=85",
       featured: true,
-      breakdown: "Wide-angle perspective distortion with warm subterranean glow against cool surface shadows to trigger instant scale curiosity."
+      breakdown: "Wide-angle perspective distortion with warm subterranean glow against cool surface shadows."
     },
     {
       id: "work-5",
@@ -131,21 +114,19 @@ window.PORTFOLIO_CONFIG = {
       ctr: "12.9%",
       viewsGenerated: "1.1M Views",
       duration: "16:12",
-      image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1280&q=85",
-      beforeImage: "",
+      image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=85",
       featured: false,
-      breakdown: "Macro silicon wafer textures composited with crisp saffron/emerald rim highlights for mobile feed dominance."
+      breakdown: "Macro silicon wafer textures composited with crisp saffron/emerald rim highlights for mobile dominance."
     },
     {
       id: "work-6",
       title: "Awakening the Forbidden Boss — Cinematic Breakdown",
       creator: "KuroKami Gaming",
-      category: "3D / Manipulation",
+      category: "3D & Manipulation",
       ctr: "15.9%",
       viewsGenerated: "3.4M Views",
       duration: "11:45",
-      image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1280&q=85",
-      beforeImage: "",
+      image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1200&q=85",
       featured: true,
       breakdown: "Custom Photoshop Camera Raw color grade, hand-painted volumetric embers, and atmospheric depth maps."
     }
@@ -153,7 +134,7 @@ window.PORTFOLIO_CONFIG = {
 
   plans: [
     {
-      id: "plan-single",
+      id: "plan-1",
       name: "Single Viral Starter",
       tagline: "Perfect for testing A/B performance on your next big upload",
       priceINR: "799",
@@ -171,7 +152,7 @@ window.PORTFOLIO_CONFIG = {
       ctaText: "Order Single Thumbnail"
     },
     {
-      id: "plan-creator",
+      id: "plan-2",
       name: "Creator Growth Pack",
       tagline: "Built for weekly creators aiming to dominate browse features",
       priceINR: "3,499",
@@ -180,7 +161,7 @@ window.PORTFOLIO_CONFIG = {
       badge: "MOST POPULAR",
       features: [
         "5 High-CTR Custom Thumbnails",
-        "2 A/B Test Variations for Your Main Video",
+        "2 A/B Test Variations for Main Upload",
         "Title + Thumbnail Synergy Consultation",
         "Unlimited Minor Tweaks & Revisions",
         "Editable Layered PSD Source Files Included",
@@ -189,7 +170,7 @@ window.PORTFOLIO_CONFIG = {
       ctaText: "Claim Creator Pack"
     },
     {
-      id: "plan-retainer",
+      id: "plan-3",
       name: "Channel Dominator Retainer",
       tagline: "Complete visual direction & monthly CTR management for serious channels",
       priceINR: "9,999",
