@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /admin-studio
+Sitemap: https://basoorigraphics.netlify.app/sitemap.xml
